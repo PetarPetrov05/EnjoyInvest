@@ -1,0 +1,20 @@
+@startuml ContainerView
+title Enjoy Invest - Container View
+
+actor User as user
+actor Admin as admin
+
+rectangle "Enjoy Invest" {
+    rectangle "Web Application\n(Next.js / React)\nUser interface for browsing posters, viewing details, messaging admins" as WebApp
+    rectangle "Admin Dashboard\n(Next.js / React)\nAdmin interface for managing posters and responding to messages" as AdminDashboard
+    rectangle "Backend API\n(Java Spring Boot REST API)\nHandles business logic for posters, users, messaging" as BackendAPI
+    rectangle "Database\n(PostgreSQL)\nStores users, posters, messages, admin data" as Database
+}
+
+user --> WebApp : Browses posters, sends messages
+admin --> AdminDashboard : Manages posters and messages
+WebApp --> BackendAPI : Calls REST API
+AdminDashboard --> BackendAPI : Calls REST API
+BackendAPI --> Database : Reads/Writes data
+
+@enduml
