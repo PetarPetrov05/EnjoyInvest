@@ -1,26 +1,125 @@
-@import "tailwindcss";
+/* src/app/globals.css */
 
+/* Tailwind Directives */
+@import "tailwindcss";
+/* Root variables for light mode */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1c1c1c;
+  --card: #f9f9f9;
+  --card-foreground: #1c1c1c;
+  --popover: #f9f9f9;
+  --popover-foreground: #1c1c1c;
+  --primary: #3b82f6; /* Tailwind blue-500 */
+  --primary-foreground: #ffffff;
+  --secondary: #6366f1; /* Tailwind indigo-500 */
+  --secondary-foreground: #ffffff;
+  --muted: #f3f4f6; /* Tailwind gray-100 */
+  --muted-foreground: #4b5563; /* Tailwind gray-700 */
+  --accent: #10b981; /* Tailwind emerald-500 */
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444; /* Tailwind red-500 */
+  --destructive-foreground: #ffffff;
+  --border: #d1d5db; /* Tailwind gray-300 */
+  --input: #f9fafb; /* Tailwind gray-50 */
+  --ring: #3b82f6; /* Tailwind blue-500 */
+  --radius: 0.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark mode variables */
+.dark {
+  --background: #1c1c1c;
+  --foreground: #f9f9f9;
+  --card: #2c2c2c;
+  --card-foreground: #f9f9f9;
+  --popover: #2c2c2c;
+  --popover-foreground: #f9f9f9;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #6366f1;
+  --secondary-foreground: #ffffff;
+  --muted: #374151; /* Tailwind gray-700 */
+  --muted-foreground: #d1d5db; /* Tailwind gray-300 */
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #4b5563; /* Tailwind gray-600 */
+  --input: #2c2c2c;
+  --ring: #3b82f6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base layer */
+@layer base {
+  html {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Components layer */
+@layer components {
+  /* Example: Card */
+  .card {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1rem;
+  }
+
+  /* Example: Button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .btn-secondary {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+  }
+
+  .btn-accent {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+}
+
+/* Utilities layer */
+@layer utilities {
+  .rounded {
+    border-radius: var(--radius);
+  }
+
+  .ring {
+    box-shadow: 0 0 0 3px var(--ring);
+  }
 }

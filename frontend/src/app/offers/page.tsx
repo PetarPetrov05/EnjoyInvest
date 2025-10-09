@@ -4,7 +4,7 @@ import { PosterDTO } from "@/app/dto/PosterDTO";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import OfferCard from "../../../components/offerComponent";
+import OfferCard from "../../components/offerComponent";
 export default function OffersPage() {
   const [offers, setOffers] = useState<PosterDTO[]>([]);
 

@@ -12,7 +12,7 @@ public class Poster {
     private Long id;
 
     @Column(nullable = false)
-    private String title; // Only required field
+    private String title; 
 
     @Column(nullable = true, length = 1000)
     private String description;
@@ -21,10 +21,10 @@ public class Poster {
     private String imageUrl;
 
     @Column(nullable = true)
-    private Double price; // Using Double for optional price
+    private Double price;
 
     @Column(nullable = true)
-    private String tags; // Simple comma-separated list for now (e.g. "tech,used,electronics")
+    private String tags; 
 
     @Column(nullable = true)
     private String location;
