@@ -1,8 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.MessageDTO;
 import com.example.demo.model.Message;
 import com.example.demo.repository.MessageRepository;
+import com.example.demo.repository.repoModels.RepoMessage;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,47 +17,40 @@ public class MessageService {
         this.messageRepository = messageRepository;
     }
 
-    public MessageDTO saveMessage(MessageDTO messageDTO) {
-        Message message = convertToEntity(messageDTO);
-        Message savedMessage = messageRepository.save(message);
-        return convertToDTO(savedMessage);
+    public Message save(Message message) {
+        RepoMessage repoMessage = toRepoModel(message);
+        RepoMessage saved = messageRepository.save(repoMessage);
+        return toModel(saved);
     }
 
-    public List<MessageDTO> getAllMessages() {
-        return messageRepository.findAll()
+    public List<Message> findAll() {
+        return ((List<RepoMessage>) messageRepository.findAll())
                 .stream()
-                .map(this::convertToDTO)
+                .map(this::toModel)
                 .collect(Collectors.toList());
     }
 
-    public MessageDTO getMessageById(Long id) {
-        Message message = messageRepository.findById(id)
+    public Message findById(Long id) {
+        RepoMessage repoMessage = messageRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Message not found with id: " + id));
-        return convertToDTO(message);
+        return toModel(repoMessage);
     }
 
-    public void deleteMessage(Long id) {
-        if (!messageRepository.existsById(id)) {
-            throw new RuntimeException("Message not found with id: " + id);
-        }
-        messageRepository.deleteById(id);
+    private com.example.demo.repository.repoModels.RepoMessage toRepoModel(Message message) {
+        com.example.demo.repository.repoModels.RepoMessage repo = new com.example.demo.repository.repoModels.RepoMessage();
+        repo.setId(message.getId());
+        repo.setContent(message.getContent());
+        repo.setTimestamp(message.getTimestamp());
+        repo.setSenderId(message.getSenderId());
+        return repo;
     }
 
-    // Helper method to convert Message entity to MessageDTO
-    private MessageDTO convertToDTO(Message message) {
-        MessageDTO dto = new MessageDTO();
-        dto.setMessageId(message.getId());
-        dto.setContent(message.getContent());
-        dto.setSenderId(message.getSenderId());
-        dto.setTimestamp(message.getTimestamp() != null ? message.getTimestamp().toString() : null);
-        return dto;
-    }
-
-    // Helper method to convert MessageDTO to Message entity
-    private Message convertToEntity(MessageDTO dto) {
-        Message message = new Message();
-        message.setContent(dto.getContent());
-        message.setSenderId(dto.getSenderId());
-        return message;
+    private Message toModel(com.example.demo.repository.repoModels.RepoMessage repoMessage) {
+        Message model = new Message();
+        model.setId(repoMessage.getId());
+        model.setContent(repoMessage.getContent());
+        model.setSenderId(repoMessage.getSenderId());
+        model.setTimestamp(repoMessage.getTimestamp());
+        return model;
     }
 }

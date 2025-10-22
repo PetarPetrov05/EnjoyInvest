@@ -1,25 +1,15 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
-
-    @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false, unique = true)
     private String email;
 
-    // Constructors
     public User() {}
 
-    public User(String name, String email) {
+    public User(Long userId, String name, String email) {
+        this.userId = userId;
         this.name = name;
         this.email = email;
     }

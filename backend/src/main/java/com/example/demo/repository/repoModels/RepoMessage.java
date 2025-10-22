@@ -1,21 +1,29 @@
-package com.example.demo.model;
+package com.example.demo.repository.repoModels;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-public class Message {
+@Entity
+@Table(name = "messages")
+public class RepoMessage {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 1000)
     private String content;
-    private LocalDateTime timestamp;
+
+    private LocalDateTime timestamp = LocalDateTime.now();
+
     private Long senderId;
 
-    public Message() {}
+    public RepoMessage() {}
 
-    public Message(Long id, String content, LocalDateTime timestamp, Long senderId) {
-        this.id = id;
+    public RepoMessage(String content, Long senderId) {
         this.content = content;
-        this.timestamp = timestamp;
         this.senderId = senderId;
+        this.timestamp = LocalDateTime.now();
     }
 
     // Getters and Setters

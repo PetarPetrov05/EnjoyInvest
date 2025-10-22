@@ -1,6 +1,9 @@
 package com.example.demo.repository;
 
-import com.example.demo.model.Poster;
+import com.example.demo.repository.repoModels.RepoPoster;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface PosterRepository extends JpaRepository<Poster, Long> {}
+@Repository
+public interface PosterRepository extends JpaRepository<RepoPoster, Long> {
+}

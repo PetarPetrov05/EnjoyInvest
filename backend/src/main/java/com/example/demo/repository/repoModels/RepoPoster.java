@@ -1,29 +1,46 @@
-package com.example.demo.model;
+package com.example.demo.repository.repoModels;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-public class Poster {
+@Entity
+@Table(name = "posters")
+public class RepoPoster {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String title;
+
+    @Column(nullable = true, length = 1000)
     private String description;
+
+    @Column(name = "image_url", nullable = true)
     private String imageUrl;
+
+    @Column(nullable = true)
     private Double price;
+
+    @Column(nullable = true)
     private String tags;
+
+    @Column(nullable = true)
     private String location;
-    private LocalDateTime createdAt;
 
-    public Poster() {}
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Poster(Long id, String title, String description, String imageUrl, Double price, String tags, String location, LocalDateTime createdAt) {
-        this.id = id;
+    public RepoPoster() {}
+
+    public RepoPoster(String title, String description, String imageUrl, Double price, String tags, String location) {
         this.title = title;
         this.description = description;
         this.imageUrl = imageUrl;
         this.price = price;
         this.tags = tags;
         this.location = location;
-        this.createdAt = createdAt;
+        this.createdAt = LocalDateTime.now();
     }
 
     // Getters and Setters
