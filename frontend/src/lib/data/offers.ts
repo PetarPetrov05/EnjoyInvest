@@ -13,10 +13,8 @@ export interface Offer {
   saved: boolean
   specifications?: Record<string, string>
   location: string
-  contactInfo: {
     phone: string
     email: string
-  }
   createdAt: string
   updatedAt: string
 }
@@ -67,10 +65,8 @@ export const offers: Offer[] = [
       Year: "2022",
     },
     location: "Downtown Depot",
-    contactInfo: {
       phone: "+1 (555) 123-4567",
       email: "rentals@enjoytransport.com",
-    },
     createdAt: "2024-01-10T08:00:00Z",
     updatedAt: "2024-01-15T12:00:00Z",
   },
@@ -110,10 +106,8 @@ export const offers: Offer[] = [
       Departure: "Every Saturday",
     },
     location: "Main Terminal",
-    contactInfo: {
       phone: "+1 (555) 123-4568",
       email: "trips@enjoytransport.com",
-    },
     createdAt: "2024-01-08T10:00:00Z",
     updatedAt: "2024-01-12T16:30:00Z",
   },
@@ -147,10 +141,8 @@ export const offers: Offer[] = [
       "Fuel Economy": "21 city / 24 highway MPG",
     },
     location: "Sales Lot A",
-    contactInfo: {
       phone: "+1 (555) 123-4569",
       email: "sales@enjoytransport.com",
-    },
     createdAt: "2024-01-05T14:00:00Z",
     updatedAt: "2024-01-13T11:30:00Z",
   },
@@ -184,10 +176,8 @@ export const offers: Offer[] = [
       Year: "2023",
     },
     location: "North Branch",
-    contactInfo: {
       phone: "+1 (555) 123-4567",
       email: "rentals@enjoytransport.com",
-    },
     createdAt: "2024-01-09T12:00:00Z",
     updatedAt: "2024-01-14T17:00:00Z",
   },
@@ -227,10 +217,8 @@ export const offers: Offer[] = [
       Schedule: "Daily departures at 9 AM",
     },
     location: "Tourist Center",
-    contactInfo: {
       phone: "+1 (555) 123-4568",
       email: "trips@enjoytransport.com",
-    },
     createdAt: "2024-01-07T09:00:00Z",
     updatedAt: "2024-01-13T14:00:00Z",
   },
@@ -264,10 +252,8 @@ export const offers: Offer[] = [
       GVWR: "14,500 lbs",
     },
     location: "Sales Lot B",
-    contactInfo: {
       phone: "+1 (555) 123-4569",
       email: "sales@enjoytransport.com",
-    },
     createdAt: "2024-01-06T11:00:00Z",
     updatedAt: "2024-01-15T09:00:00Z",
   },

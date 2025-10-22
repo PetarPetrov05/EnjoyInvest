@@ -6,8 +6,6 @@ import com.example.demo.repository.PosterRepository;
 import com.example.demo.repository.repoModels.RepoPoster;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,99 +13,117 @@ import java.util.stream.Collectors;
 public class PosterService {
 
     private final PosterRepository posterRepository;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     public PosterService(PosterRepository posterRepository) {
         this.posterRepository = posterRepository;
-    }
-
-    // Convert Model to Entity
-    private RepoPoster toEntity(Poster model) {
-        RepoPoster entity = new RepoPoster();
-        entity.setId(model.getId());
-        entity.setTitle(model.getTitle());
-        entity.setDescription(model.getDescription());
-        entity.setImageUrl(model.getImageUrl());
-        entity.setPrice(model.getPrice());
-        entity.setTags(model.getTags());
-        entity.setLocation(model.getLocation());
-        entity.setCreatedAt(model.getCreatedAt());
-        return entity;
-    }
-
-    // Convert Entity to Model
-    private Poster toModel(RepoPoster entity) {
-        Poster model = new Poster();
-        model.setId(entity.getId());
-        model.setTitle(entity.getTitle());
-        model.setDescription(entity.getDescription());
-        model.setImageUrl(entity.getImageUrl());
-        model.setPrice(entity.getPrice());
-        model.setTags(entity.getTags());
-        model.setLocation(entity.getLocation());
-        model.setCreatedAt(entity.getCreatedAt());
-        return model;
-    }
-
-    // Convert Model to DTO
-    private PosterDTO toDTO(Poster model) {
-        PosterDTO dto = new PosterDTO();
-        dto.setId(model.getId());
-        dto.setTitle(model.getTitle());
-        dto.setDescription(model.getDescription());
-        dto.setImageUrl(model.getImageUrl());
-        dto.setPrice(model.getPrice());
-        dto.setTags(model.getTags());
-        dto.setLocation(model.getLocation());
-        dto.setCreatedAt(model.getCreatedAt().toString());
-        return dto;
-    }
-
-    // Convert DTO to Model
-    private Poster fromDTO(PosterDTO dto) {
-        Poster model = new Poster();
-        model.setId(dto.getId());
-        model.setTitle(dto.getTitle());
-        model.setDescription(dto.getDescription());
-        model.setImageUrl(dto.getImageUrl());
-        model.setPrice(dto.getPrice());
-        model.setTags(dto.getTags());
-        model.setLocation(dto.getLocation());
-        if (dto.getCreatedAt() != null) {
-            model.setCreatedAt(LocalDateTime.parse(dto.getCreatedAt(), formatter));
-        } else {
-            model.setCreatedAt(LocalDateTime.now());
-        }
-        return model;
-    }
-
-    // Service methods
-    public PosterDTO savePoster(PosterDTO dto) {
-        Poster model = fromDTO(dto);                // DTO → Model
-        RepoPoster entity = toEntity(model);        // Model → Entity
-        RepoPoster savedEntity = posterRepository.save(entity); // save entity
-        Poster savedModel = toModel(savedEntity);   // Entity → Model
-        return toDTO(savedModel);                   // Model → DTO
     }
 
     public List<PosterDTO> getAllPosters() {
         return posterRepository.findAll()
                 .stream()
-                .map(this::toModel)    // Entity → Model
-                .map(this::toDTO)      // Model → DTO
+                .map(this::mapRepoToModel)
+                .map(this::mapModelToDTO)
                 .collect(Collectors.toList());
     }
-
     public PosterDTO getPosterById(Long id) {
-        RepoPoster entity = posterRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Poster not found"));
-        Poster model = toModel(entity);
-        return toDTO(model);
+        RepoPoster repoPoster = posterRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Poster not found with ID: " + id));
+
+        Poster model = mapRepoToModel(repoPoster);
+        return mapModelToDTO(model);
     }
 
-    public void deletePoster(Long id) {
-        if (!posterRepository.existsById(id)) {
-            throw new RuntimeException("Poster not found");
-        }
-        posterRepository.deleteById(id);
+
+    public PosterDTO createPoster(PosterDTO posterDTO) {
+        Poster poster = mapDTOToModel(posterDTO);
+        RepoPoster saved = posterRepository.save(mapModelToRepo(poster));
+        return mapModelToDTO(mapRepoToModel(saved));
+    }
+
+    // ---------- MAPPERS ----------
+
+    private Poster mapRepoToModel(RepoPoster repo) {
+        return new Poster(
+                repo.getId(),
+                repo.getTitle(),
+                repo.getDescription(),
+                repo.getFullDescription(),
+                repo.getPrice(),
+                repo.getType(),
+                repo.getCategory(),
+                repo.getImage(),
+                repo.getImages(),
+                repo.getLikes(),
+                repo.getSaved(),
+                repo.getLocation(),
+                repo.getPhone(),
+                repo.getEmail(),
+                repo.getCreatedAt(),
+                repo.getUpdatedAt()
+        );
+    }
+
+    private RepoPoster mapModelToRepo(Poster poster) {
+        RepoPoster repo = new RepoPoster(
+                poster.getTitle(),
+                poster.getDescription(),
+                poster.getFullDescription(),
+                poster.getPrice(),
+                poster.getType(),
+                poster.getCategory(),
+                poster.getImage(),
+                poster.getImages(),
+                poster.getLikes(),
+                poster.getSaved(),
+                poster.getLocation(),
+                poster.getPhone(),
+                poster.getEmail()
+        );
+        repo.setId(poster.getId());
+        repo.setCreatedAt(poster.getCreatedAt());
+        repo.setUpdatedAt(poster.getUpdatedAt());
+        return repo;
+    }
+
+    private PosterDTO mapModelToDTO(Poster poster) {
+        return new PosterDTO(
+                poster.getId(),
+                poster.getTitle(),
+                poster.getDescription(),
+                poster.getFullDescription(),
+                poster.getPrice(),
+                poster.getType(),
+                poster.getCategory(),
+                poster.getImage(),
+                poster.getImages(),
+                poster.getLikes(),
+                poster.getSaved(),
+                poster.getLocation(),
+                poster.getPhone(),
+                poster.getEmail(),
+                poster.getCreatedAt(),
+                poster.getUpdatedAt()
+        );
+    }
+
+    private Poster mapDTOToModel(PosterDTO dto) {
+        return new Poster(
+                dto.getId(),
+                dto.getTitle(),
+                dto.getDescription(),
+                dto.getFullDescription(),
+                dto.getPrice(),
+                dto.getType(),
+                dto.getCategory(),
+                dto.getImage(),
+                dto.getImages(),
+                dto.getLikes(),
+                dto.getSaved(),
+                dto.getLocation(),
+                dto.getPhone(),
+                dto.getEmail(),
+                dto.getCreatedAt(),
+                dto.getUpdatedAt()
+        );
     }
 }

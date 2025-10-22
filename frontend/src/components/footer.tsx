@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link"
 import { Truck, Phone, Mail, MapPin } from "lucide-react"
 

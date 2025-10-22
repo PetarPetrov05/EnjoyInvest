@@ -1,10 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.PosterDTO;
-import com.example.demo.service.PosterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.example.demo.service.PosterService;
+import com.example.demo.dto.PosterDTO;
 import java.util.List;
 
 @RestController
@@ -18,9 +17,8 @@ public class PosterController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PosterDTO>> getAllPosters() {
-        List<PosterDTO> posters = posterService.getAllPosters();
-        return ResponseEntity.ok(posters);
+    public List<PosterDTO> getAllPosters() {
+        return posterService.getAllPosters();
     }
 
     @GetMapping("/{id}")
@@ -30,14 +28,7 @@ public class PosterController {
     }
 
     @PostMapping
-    public ResponseEntity<PosterDTO> createPoster(@RequestBody PosterDTO posterDTO) {
-        PosterDTO created = posterService.savePoster(posterDTO);
-        return ResponseEntity.ok(created);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePoster(@PathVariable Long id) {
-        posterService.deletePoster(id);
-        return ResponseEntity.noContent().build();
+    public PosterDTO createPoster(@RequestBody PosterDTO posterDTO) {
+        return posterService.createPoster(posterDTO);
     }
 }
