@@ -1,16 +1,26 @@
+"use client";
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrendingUp, Users, Shield, Clock } from "lucide-react"
 import Link from "next/link"
-import { offers } from "@/lib/data/offers"
+import { Offer } from "@/lib/data/offers"
 import { OfferCard } from "@/components/offer-card"
-
+import { useEffect, useState } from "react";
+import { getOffers } from "@/lib/data/offers";
 export default function HomePage() {
   // Get first 3 offers as featured opportunities
-  const featuredOffers = offers.slice(0, 3)
+  
+  const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
 
+  useEffect(() => {
+    async function loadOffers() {
+      const offers = await getOffers();
+      setFeaturedOffers(offers.slice(0, 3));
+    }
+    loadOffers();
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -38,7 +48,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section
       <section className="py-16 bg-muted/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -98,7 +108,7 @@ export default function HomePage() {
             </Card>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Featured Offers Section */}
       <section className="py-16">
@@ -106,7 +116,7 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Featured Opportunities</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Check out our latest investment opportunities and portfolio options.
+              Check out our latest offers.
             </p>
           </div>
 
@@ -118,14 +128,14 @@ export default function HomePage() {
 
           <div className="text-center mt-8">
             <Button size="lg" variant="outline" asChild>
-              <Link href="/offers">View All Opportunities</Link>
+              <Link href="/offers">View All Offers</Link>
             </Button>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary text-primary-foreground">
+      {/* <section className="py-16 bg-primary text-primary-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Start Investing?</h2>
           <p className="text-xl mb-8 opacity-90">Contact us today for personalized investment solutions.</p>
@@ -133,7 +143,7 @@ export default function HomePage() {
             <Link href="/contact">Start Investing Now</Link>
           </Button>
         </div>
-      </section>
+      </section> */}
 
       <Footer />
     </div>

@@ -61,7 +61,7 @@ export function OfferCard({ offer, onLike, onSave }: OfferCardProps) {
             </div>
             <div className="flex items-center space-x-1">
               <MessageCircle className="h-4 w-4" />
-              <span>{offer.comments.length}</span>
+              {/* <span>{offer.comments.length}</span> */}
             </div>
           </div>
 

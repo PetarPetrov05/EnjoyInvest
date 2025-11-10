@@ -18,15 +18,27 @@ import {
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
-import { offers } from "@/lib/data/offers"
+
+import { useEffect } from "react";
+
+import { getOffers } from "@/lib/data/offers";
+import type { Offer } from "@/lib/data/offers"
 
 export default function AdminOffersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
-
+const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
+  
+    useEffect(() => {
+      async function loadOffers() {
+        const offers = await getOffers();
+        setFeaturedOffers(offers);
+      }
+      loadOffers();
+    }, []);
   // Add status to offers for admin view
-  const adminOffers = offers.map((offer) => ({
+  const adminOffers = featuredOffers.map((offer) => ({
     ...offer,
     status: Math.random() > 0.2 ? "active" : "inactive",
     views: Math.floor(Math.random() * 500) + 50,

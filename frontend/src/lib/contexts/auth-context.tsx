@@ -9,47 +9,13 @@ interface AuthContextType extends AuthState {
   register: (data: RegisterData) => Promise<boolean>
   logout: () => void
   updateUser: (user: Partial<User>) => void
+  getAuthHeader: () => Record<string, string>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users for demonstration
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "John Admin",
-    email: "admin@enjoytransport.com",
-    role: "admin",
-    createdAt: "2024-01-01T00:00:00Z",
-    isApproved: true,
-  },
-  {
-    id: "2",
-    name: "Jane Business",
-    email: "jane@business.com",
-    role: "approved",
-    createdAt: "2024-01-02T00:00:00Z",
-    isApproved: true,
-    companyName: "Jane's Logistics",
-  },
-  {
-    id: "3",
-    name: "Bob User",
-    email: "bob@example.com",
-    role: "regular",
-    createdAt: "2024-01-03T00:00:00Z",
-    isApproved: true,
-  },
-  {
-    id: "4",
-    name: "Alice Pending",
-    email: "alice@newbusiness.com",
-    role: "regular",
-    createdAt: "2024-01-04T00:00:00Z",
-    isApproved: false,
-    companyName: "Alice's Transport Co",
-  },
-]
+// 🌍 Change this depending on your backend base URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/auth"
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
@@ -58,103 +24,101 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: false,
   })
 
-  // Simulate checking for existing session on mount
+  // ✅ Load user & token from localStorage on mount
   useEffect(() => {
-    const checkAuth = () => {
-      const storedUser = localStorage.getItem("enjoy-transport-user")
-      if (storedUser) {
-        try {
-          const user = JSON.parse(storedUser)
-          setAuthState({
-            user,
-            isLoading: false,
-            isAuthenticated: true,
-          })
-        } catch {
-          localStorage.removeItem("enjoy-transport-user")
-          setAuthState({
-            user: null,
-            isLoading: false,
-            isAuthenticated: false,
-          })
-        }
-      } else {
-        setAuthState({
-          user: null,
-          isLoading: false,
-          isAuthenticated: false,
-        })
-      }
-    }
+    const storedUser = localStorage.getItem("enjoy-transport-user")
+    const storedToken = localStorage.getItem("enjoy-transport-token")
 
-    // Simulate network delay
-    setTimeout(checkAuth, 1000)
+    if (storedUser && storedToken) {
+      try {
+        const user = JSON.parse(storedUser)
+        setAuthState({
+          user,
+          isLoading: false,
+          isAuthenticated: true,
+        })
+      } catch {
+        logout()
+      }
+    } else {
+      setAuthState({
+        user: null,
+        isLoading: false,
+        isAuthenticated: false,
+      })
+    }
   }, [])
 
+  // ✅ LOGIN (gets JWT from backend)
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     setAuthState((prev) => ({ ...prev, isLoading: true }))
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const res = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      })
 
-    // Find user by email (in real app, this would be server-side)
-    const user = mockUsers.find((u) => u.email === credentials.email)
+      if (!res.ok) throw new Error("Invalid credentials")
 
-    if (user && credentials.password === "password123") {
-      // In real app, password would be hashed and verified server-side
+      const data = await res.json()
+      const { user, token } = data
+
       localStorage.setItem("enjoy-transport-user", JSON.stringify(user))
+      localStorage.setItem("enjoy-transport-token", token)
+
       setAuthState({
         user,
         isLoading: false,
         isAuthenticated: true,
       })
+
       return true
-    }
-
-    setAuthState((prev) => ({ ...prev, isLoading: false }))
-    return false
-  }
-
-  const register = async (data: RegisterData): Promise<boolean> => {
-    setAuthState((prev) => ({ ...prev, isLoading: true }))
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Check if email already exists
-    const existingUser = mockUsers.find((u) => u.email === data.email)
-    if (existingUser) {
+    } catch (err) {
+      console.error("Login failed:", err)
       setAuthState((prev) => ({ ...prev, isLoading: false }))
       return false
     }
-
-    // Create new user
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: data.name,
-      email: data.email,
-      role: data.accountType === "business" ? "regular" : "regular", // Business accounts start as regular, need approval
-      createdAt: new Date().toISOString(),
-      isApproved: data.accountType === "regular", // Regular users are auto-approved
-      companyName: data.companyName,
-      businessLicense: data.businessLicense,
-    }
-
-    // In real app, this would be saved to database
-    mockUsers.push(newUser)
-    localStorage.setItem("enjoy-transport-user", JSON.stringify(newUser))
-
-    setAuthState({
-      user: newUser,
-      isLoading: false,
-      isAuthenticated: true,
-    })
-
-    return true
   }
 
+  // ✅ REGISTER (returns user + JWT)
+  const register = async (data: RegisterData): Promise<boolean> => {
+    setAuthState((prev) => ({ ...prev, isLoading: true }))
+
+    try {
+      const res = await fetch(`${API_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      if (!res.ok) throw new Error("Registration failed")
+
+      const response = await res.json()
+      const { user, token } = response
+
+      localStorage.setItem("enjoy-transport-user", JSON.stringify(user))
+      localStorage.setItem("enjoy-transport-token", token)
+
+      setAuthState({
+        user,
+        isLoading: false,
+        isAuthenticated: true,
+      })
+
+      return true
+    } catch (err) {
+      console.error("Registration failed:", err)
+      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      return false
+    }
+  }
+
+  // ✅ LOGOUT
   const logout = () => {
     localStorage.removeItem("enjoy-transport-user")
+    localStorage.removeItem("enjoy-transport-token")
     setAuthState({
       user: null,
       isLoading: false,
@@ -162,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  // ✅ UPDATE USER LOCALLY
   const updateUser = (updates: Partial<User>) => {
     if (authState.user) {
       const updatedUser = { ...authState.user, ...updates }
@@ -173,6 +138,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // ✅ Helper to attach JWT in headers for protected routes
+  const getAuthHeader = (): Record<string, string> => {
+    const token = localStorage.getItem("enjoy-transport-token")
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -181,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         updateUser,
+        getAuthHeader,
       }}
     >
       {children}

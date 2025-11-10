@@ -6,6 +6,7 @@ import com.example.demo.repository.PosterRepository;
 import com.example.demo.repository.repoModels.RepoPoster;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ public class PosterService {
         this.posterRepository = posterRepository;
     }
 
+    // Get all posters
     public List<PosterDTO> getAllPosters() {
         return posterRepository.findAll()
                 .stream()
@@ -25,6 +27,8 @@ public class PosterService {
                 .map(this::mapModelToDTO)
                 .collect(Collectors.toList());
     }
+
+    // Get poster by ID
     public PosterDTO getPosterById(Long id) {
         RepoPoster repoPoster = posterRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Poster not found with ID: " + id));
@@ -33,8 +37,18 @@ public class PosterService {
         return mapModelToDTO(model);
     }
 
-
+    // Create a new poster with edge-case handling
     public PosterDTO createPoster(PosterDTO posterDTO) {
+        if (posterDTO == null) {
+            throw new RuntimeException("Cannot create poster from null DTO");
+        }
+        if (posterDTO.getTitle() == null) {
+            throw new RuntimeException("Poster title cannot be null");
+        }
+        if (posterDTO.getImages() == null) {
+            posterDTO.setImages(Collections.emptyList());
+        }
+
         Poster poster = mapDTOToModel(posterDTO);
         RepoPoster saved = posterRepository.save(mapModelToRepo(poster));
         return mapModelToDTO(mapRepoToModel(saved));

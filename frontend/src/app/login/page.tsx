@@ -2,17 +2,17 @@
 
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Truck } from "lucide-react"
 import { LoginForm } from "@/components/auth/login-form"
 import { RegisterForm } from "@/components/auth/register-form"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login")
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -49,20 +49,34 @@ export default function LoginPage() {
             <p className="text-muted-foreground mt-2">Sign in to your account or create a new one to get started.</p>
           </div>
 
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Sign In</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
+          <div className="w-full">
+            <div className="grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1 mb-4">
+              <button
+                onClick={() => setActiveTab("login")}
+                className={`rounded-md py-2 text-sm font-medium transition-all ${
+                  activeTab === "login"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setActiveTab("register")}
+                className={`rounded-md py-2 text-sm font-medium transition-all ${
+                  activeTab === "register"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Register
+              </button>
+            </div>
 
-            <TabsContent value="login">
-              <LoginForm />
-            </TabsContent>
-
-            <TabsContent value="register">
-              <RegisterForm />
-            </TabsContent>
-          </Tabs>
+            <div>
+              {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
+            </div>
+          </div>
         </div>
       </section>
 
