@@ -1,6 +1,5 @@
 package com.example.demo;
 
-import com.example.demo.model.AuthResult;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.repoModels.RepoRole;
@@ -12,15 +11,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import org.springframework.test.context.ActiveProfiles;
-@ActiveProfiles("test")
+
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test") // ensures it uses application-test.properties
 class AuthFlowIntegrationTest {
 
     @Autowired
@@ -56,7 +55,6 @@ class AuthFlowIntegrationTest {
 
     @Test
     void fullUserFlow_RegisterLoginAccessProtectedEndpoint() throws Exception {
-
         // --- REGISTER ---
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,13 +73,11 @@ class AuthFlowIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        // Extract JWT token from login response
         String token = loginResponse.split("\"token\":\"")[1].split("\"")[0];
 
-        // // --- ACCESS PROTECTED ENDPOINT ---
+        // Optionally test protected endpoint
         // mockMvc.perform(get("/api/users/me")
-        //                 .header("Authorization", "Bearer " + token)
-        //                 .contentType(MediaType.APPLICATION_JSON))
+        //                 .header("Authorization", "Bearer " + token))
         //         .andExpect(status().isOk())
         //         .andExpect(jsonPath("$.email").value(testEmail))
         //         .andExpect(jsonPath("$.roles[0]").value("USER"));
@@ -89,23 +85,14 @@ class AuthFlowIntegrationTest {
 
     @Test
     void loginWithWrongPassword_ShouldFail() throws Exception {
-        // Prepare a user
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"" + testEmail + "\",\"password\":\"" + testPassword + "\",\"name\":\"Full Flow\"}"))
                 .andExpect(status().isOk());
 
-        // Attempt login with wrong password
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"" + testEmail + "\",\"password\":\"wrongpassword\"}"))
                 .andExpect(status().isUnauthorized());
     }
-
-    // @Test
-    // void accessProtectedEndpointWithoutToken_ShouldFail() throws Exception {
-    //     mockMvc.perform(get("/api/users/me")
-    //                     .contentType(MediaType.APPLICATION_JSON))
-    //             .andExpect(status().isUnauthorized());
-    // }
 }
