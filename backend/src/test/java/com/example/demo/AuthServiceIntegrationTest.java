@@ -18,9 +18,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.test.context.ActiveProfiles;
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 class AuthFlowIntegrationTest {
 
     @Autowired
