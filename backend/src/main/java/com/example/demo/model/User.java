@@ -10,4 +10,5 @@ public class User {
     private Long id;
     private String email;
     private Set<String> roles;
+    //enum for the roles could be used here
 }
