@@ -26,30 +26,30 @@ jobs:
           --health-retries=5
 
     steps:
-      # Checkout code
+      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up Java 17
+      # 2️⃣ Set up Java 17
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Prepare Gradle wrapper
-      - name: Make gradlew executable
+      # 3️⃣ Make gradlew executable
+      - name: Prepare Gradle Wrapper
         run: |
           cd backend
           chmod +x gradlew
 
-      # Run backend tests with H2 (in-memory DB for CI)
-      - name: Run tests
+      # 4️⃣ Run tests with H2 in-memory DB
+      - name: Run backend tests
         run: |
           cd backend
           ./gradlew clean test --no-daemon -Dspring.profiles.active=test
 
-      # Log in to GitHub Container Registry
+      # 5️⃣ Log in to GitHub Container Registry (GHCR)
       - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
@@ -57,21 +57,10 @@ jobs:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # Build backend Docker image
+      # 6️⃣ Build backend Docker image
       - name: Build backend Docker image
         run: docker build -t ghcr.io/${{ github.repository_owner }}/enjoyinvest-backend:latest ./backend
 
-      # Run Flyway migrations inside Docker container
-      - name: Run backend migrations
-        run: |
-          docker run --rm \
-            --network host \
-            -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/enjoyinvest_test \
-            -e SPRING_DATASOURCE_USERNAME=postgres \
-            -e SPRING_DATASOURCE_PASSWORD=postgres \
-            ghcr.io/${{ github.repository_owner }}/enjoyinvest-backend:latest \
-            ./gradlew flywayMigrate -Dspring.profiles.active=test
-
-      # Push backend Docker image to GHCR
+      # 7️⃣ Push backend Docker image to GHCR
       - name: Push backend Docker image
         run: docker push ghcr.io/${{ github.repository_owner }}/enjoyinvest-backend:latest
