@@ -10,20 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Set up Java 17
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Give gradlew execute permission
-        run: chmod +x ./gradlew
+      # Navigate to backend and make gradlew executable
+      - name: Prepare Gradle Wrapper
+        run: |
+          cd backend
+          chmod +x gradlew
 
+      # Build the backend
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: |
+          cd backend
+          ./gradlew clean build --no-daemon
 
+      # Run backend tests
       - name: Run tests
-        run: ./gradlew test
+        run: |
+          cd backend
+          ./gradlew test --no-daemon
