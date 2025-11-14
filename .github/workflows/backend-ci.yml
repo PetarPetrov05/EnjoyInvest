@@ -1,56 +1,77 @@
-name: Backend CI (Spring Boot - Gradle)
+name: Backend CI and Docker Build
 
 on:
   push:
     branches: [ master ]
   pull_request:
+    branches: [ master ]
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: enjoyinvest_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
-      # 1️⃣ Checkout repository
+      # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Java 17
+      # Set up Java 17
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3️⃣ Prepare Gradle Wrapper
-      - name: Prepare Gradle Wrapper
+      # Prepare Gradle wrapper
+      - name: Make gradlew executable
         run: |
           cd backend
           chmod +x gradlew
 
-      # 4️⃣ Build the backend
-      - name: Build with Gradle
+      # Run backend tests with H2 (in-memory DB for CI)
+      - name: Run tests
         run: |
           cd backend
-          ./gradlew clean build --no-daemon
+          ./gradlew clean test --no-daemon -Dspring.profiles.active=test
 
-      # 5️⃣ Run tests using H2 in-memory DB
-      - name: Run backend tests
-        run: |
-          cd backend
-          ./gradlew test --no-daemon -Dspring.profiles.active=test
-
-      # 6️⃣ Log in to GitHub Container Registry
-      - name: Log in to GitHub Container Registry
+      # Log in to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # 7️⃣ Build Docker image
+      # Build backend Docker image
       - name: Build backend Docker image
         run: docker build -t ghcr.io/${{ github.repository_owner }}/enjoyinvest-backend:latest ./backend
 
-      # 8️⃣ Push Docker image
+      # Run Flyway migrations inside Docker container
+      - name: Run backend migrations
+        run: |
+          docker run --rm \
+            --network host \
+            -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/enjoyinvest_test \
+            -e SPRING_DATASOURCE_USERNAME=postgres \
+            -e SPRING_DATASOURCE_PASSWORD=postgres \
+            ghcr.io/${{ github.repository_owner }}/enjoyinvest-backend:latest \
+            ./gradlew flywayMigrate -Dspring.profiles.active=test
+
+      # Push backend Docker image to GHCR
       - name: Push backend Docker image
         run: docker push ghcr.io/${{ github.repository_owner }}/enjoyinvest-backend:latest
