@@ -3,7 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.flywaydb.flyway' version '9.22.0'
-    id "org.sonarqube" version "7.0.1.6134"
+    id 'org.sonarqube' version '7.0.1.6134'
     id 'jacoco'
 }
 
@@ -52,15 +52,7 @@ dependencies {
     testImplementation 'com.h2database:h2'
 }
 
-sonar {
-    properties {
-        property "sonar.projectKey", "PetarPetrov05_EnjoyInvest"
-        property "sonar.organization", "petarpetrov05"
-        property "sonar.java.coveragePlugin", "jacoco"
-        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
-    }
-}
-
+// Flyway config
 flyway {
     url = 'jdbc:postgresql://localhost:5432/enjoyinvest'
     user = 'postgres'
@@ -69,27 +61,40 @@ flyway {
     locations = ['filesystem:src/main/resources/db/migrations']
 }
 
-tasks.withType(JavaCompile) {
-    options.annotationProcessorPath = configurations.annotationProcessor
-    options.compilerArgs += ["-parameters"]
+// Jacoco config
+jacoco {
+    toolVersion = "0.8.10"
 }
 
 tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'spring.profiles.active', 'test'
-    finalizedBy jacocoTestReport
-}
-
-jacoco {
-    toolVersion = "0.8.10"
+    finalizedBy 'jacocoTestReport' // Generate Jacoco report after tests
 }
 
 jacocoTestReport {
     dependsOn test
-
     reports {
-        xml.required = true
-        html.required = true
+        xml.required = true      // Required for SonarQube
+        html.required = true     // Nice visual report
         csv.required = false
     }
+}
+
+// SonarQube config
+sonarqube {
+    properties {
+        property "sonar.projectKey", "PetarPetrov05_EnjoyInvest"
+        property "sonar.organization", "petarpetrov05"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.java.binaries", "$buildDir/classes/java/main"
+        property "sonar.junit.reportPaths", "$buildDir/test-results/test"
+        property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+// Java compiler options
+tasks.withType(JavaCompile) {
+    options.annotationProcessorPath = configurations.annotationProcessor
+    options.compilerArgs += ["-parameters"]
 }
