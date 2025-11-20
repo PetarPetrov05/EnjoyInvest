@@ -47,3 +47,40 @@ jobs:
       # 5️ Ensure sonar-resolver folder exists
       - name: Prepare sonar-resolver folder
         run: mkdir -p backend
+      # 6️ Run tests + Jacoco + SonarQube analysis
+      - name: Run tests and SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd backend
+          ./gradlew clean build jacocoTestReport sonar -Dspring.profiles.active=test --no-daemon
+
+      # 6️a Upload JaCoCo HTML report as artifact
+      - name: Upload JaCoCo Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: backend/build/reports/jacoco/test/html
+
+      # 7️ Only build & push Docker image on master branch
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build backend Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          docker build \
+            -t ghcr.io/petarpetrov05/enjoyinvest-backend:latest \
+            -t ghcr.io/petarpetrov05/enjoyinvest-backend:${{ github.sha }} \
+            ./backend
+
+      - name: Push backend Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          docker push ghcr.io/petarpetrov05/enjoyinvest-backend:latest
+          docker push ghcr.io/petarpetrov05/enjoyinvest-backend:${{ github.sha }}
