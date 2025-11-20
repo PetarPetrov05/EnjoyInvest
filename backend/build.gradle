@@ -63,22 +63,26 @@ flyway {
 
 // Jacoco config
 jacoco {
-    toolVersion = "0.8.10"
+    toolVersion = "0.8.11" // updated for Java 21 support
 }
 
+// Ensure tests use JUnit 5 and generate Jacoco report
 tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'spring.profiles.active', 'test'
-    finalizedBy 'jacocoTestReport' // Generate Jacoco report after tests
+    finalizedBy tasks.jacocoTestReport
 }
 
-jacocoTestReport {
-    dependsOn test
+// Jacoco report task
+tasks.jacocoTestReport {
+    dependsOn tasks.test
     reports {
         xml.required = true      // Required for SonarQube
-        html.required = true     // Nice visual report
+        html.required = true     // Visual report
         csv.required = false
     }
+    // Ensure it uses correct execution data file
+    executionData.setFrom(fileTree(buildDir).include("jacoco/test.exec"))
 }
 
 // SonarQube config
