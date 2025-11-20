@@ -22,11 +22,11 @@ jobs:
         with:
           fetch-depth: 0  # required for accurate SonarQube analysis
 
-      # 2️⃣ Set up Java 17
+      # 2️⃣ Set up Java 21
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'temurin'
           cache: gradle
 
@@ -44,7 +44,12 @@ jobs:
           cd backend
           chmod +x gradlew
 
-      # 5️⃣ Run tests + SonarQube analysis
+      # 5️⃣ Ensure sonar-resolver folder exists
+      - name: Prepare sonar-resolver folder
+        run: |
+          mkdir -p backend/build/sonar-resolver
+
+      # 6️⃣ Run tests + Jacoco + SonarQube analysis
       - name: Run tests and SonarQube analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -52,7 +57,7 @@ jobs:
           cd backend
           ./gradlew clean build jacocoTestReport sonar -Dspring.profiles.active=test --no-daemon
 
-      # 5️⃣a Upload JaCoCo report as artifact
+      # 6️⃣a Upload JaCoCo report as artifact
       - name: Upload JaCoCo Report
         uses: actions/upload-artifact@v4
         with:
