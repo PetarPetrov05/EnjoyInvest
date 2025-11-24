@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-analyze:
-    name: Build, Test, Coverage, and Dockerize
+    name: Build, Test, Coverage, SonarCloud, and Dockerize
     runs-on: ubuntu-latest
 
     permissions:
@@ -30,7 +30,7 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      # 3️⃣ Cache Sonar packages
+      # 3️⃣ Cache SonarCloud packages
       - name: Cache Sonar packages
         uses: actions/cache@v4
         with:
@@ -44,11 +44,23 @@ jobs:
           cd backend
           chmod +x gradlew
 
-      # 5️⃣ Run tests + JaCoCo coverage
+      # 5️⃣ Run tests and generate JaCoCo report
       - name: Run tests and generate JaCoCo report
         run: |
           cd backend
           ./gradlew clean build jacocoTestReport -Dspring.profiles.active=test --no-daemon
+
+      # 5a️⃣ Run SonarCloud analysis
+      - name: Run SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd backend
+          ./gradlew sonar \
+            -Dsonar.projectKey=PetarPetrov05_EnjoyInvest \
+            -Dsonar.organization=petarpetrov05 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dspring.profiles.active=test
 
       # 6️⃣ Upload JaCoCo HTML report as artifact
       - name: Upload JaCoCo Report
@@ -57,7 +69,7 @@ jobs:
           name: jacoco-report
           path: backend/build/reports/jacoco/test/html
 
-      # 7️⃣ Only build & push Docker image on master branch
+      # 7️⃣ Docker login (only on master branch)
       - name: Log in to GHCR
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: docker/login-action@v2
@@ -66,6 +78,7 @@ jobs:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      # 8️⃣ Build backend Docker image
       - name: Build backend Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
@@ -74,6 +87,7 @@ jobs:
             -t ghcr.io/petarpetrov05/enjoyinvest-backend:${{ github.sha }} \
             ./backend
 
+      # 9️⃣ Push backend Docker image
       - name: Push backend Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |

@@ -19,7 +19,7 @@ out/
 # Spring Boot application properties
 backend/src/main/resources/application.properties
 backend/src/main/resources/application-test.properties
-
+backend/src/main/resources/application.properties
 # ------------------------
 # IDEs
 # ------------------------
