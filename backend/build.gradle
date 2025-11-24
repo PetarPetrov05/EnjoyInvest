@@ -75,15 +75,22 @@ tasks.named("test") {
     finalizedBy tasks.jacocoTestReport
 }
 
-// Jacoco report task
 tasks.jacocoTestReport {
-    dependsOn tasks.test
+    dependsOn tasks.test  // ensure tests run first
+
+    executionData(fileTree(
+        dir: layout.buildDirectory.get().asFile,
+        includes: [
+            "jacoco/test.exec",
+            "jacoco/integrationTest.exec"
+        ]
+    ))
+
     reports {
-        xml.required = true
-        html.required = true
+        xml.required = true   // required for SonarCloud
+        html.required = true  // optional: local viewing
         csv.required = false
     }
-    // Usually Gradle automatically picks up test execution data
 }
 
 // SonarQube configuration
