@@ -1,3 +1,6 @@
+# Ignore project.properties everywhere
+project.properties
+**/project.properties
 HELP.md
 .gradle
 build/

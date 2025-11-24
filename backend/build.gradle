@@ -116,6 +116,10 @@ tasks.named('sonar') {
         }
     }
 }
+tasks.named('sonar') {
+    dependsOn tasks.test
+    dependsOn tasks.jacocoTestReport
+}
 // Java compiler options
 tasks.withType(JavaCompile) {
     options.annotationProcessorPath = configurations.annotationProcessor
