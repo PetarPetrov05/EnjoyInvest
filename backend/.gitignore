@@ -2,7 +2,7 @@
 # Ignore application properties
 backend/src/main/resources/application.properties
 backend/src/main/resources/application-test.properties
-
+#
 C:\Users\petar\Univesity\Semester3\EnjoyInvest\origin\master\backend\src\main\resources\application.properties
 HELP.md
 .gradle
