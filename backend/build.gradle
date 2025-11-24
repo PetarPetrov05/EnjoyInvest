@@ -22,12 +22,14 @@ repositories {
 }
 
 dependencies {
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 
     // JWT
@@ -44,7 +46,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.32'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
 
-    // Test libs
+    // Tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mockito:mockito-core:5.3.1'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
@@ -52,7 +54,7 @@ dependencies {
     testImplementation 'com.h2database:h2'
 }
 
-// Flyway config
+// Flyway configuration
 flyway {
     url = 'jdbc:postgresql://localhost:5432/enjoyinvest'
     user = 'postgres'
@@ -61,20 +63,13 @@ flyway {
     locations = ['filesystem:src/main/resources/db/migrations']
 }
 
-// Jacoco config
+// Jacoco configuration
 jacoco {
     toolVersion = "0.8.11"
 }
-tasks.register('disableSonarResolver') {
-    doLast {
-        println "Skipping sonarResolver task"
-    }
-}
-tasks.matching { it.name == 'sonarResolver' }.configureEach {
-    enabled = false
-}
+
 // Ensure tests use JUnit 5 and generate Jacoco report
-tasks.named('test') {
+tasks.named("test") {
     useJUnitPlatform()
     systemProperty 'spring.profiles.active', 'test'
     finalizedBy tasks.jacocoTestReport
@@ -88,10 +83,10 @@ tasks.jacocoTestReport {
         html.required = true
         csv.required = false
     }
-    executionData.setFrom(fileTree(buildDir).include("jacoco/*.exec"))
+    // Usually Gradle automatically picks up test execution data
 }
 
-// SonarQube config
+// SonarQube configuration
 sonarqube {
     properties {
         property "sonar.projectKey", "PetarPetrov05_EnjoyInvest"
@@ -103,23 +98,13 @@ sonarqube {
         property "sonar.coverage.minimum", "80"
     }
 }
-tasks.named('sonar') {
-    onlyIf { !project.hasProperty('skipSonar') }
-}
-tasks.named('sonar') {
-    doFirst {
-        // Gradle's file() ensures proper path handling on Windows/Linux/macOS
-        def sonarResolverDir = file("$buildDir/sonar-resolver")
-        if (!sonarResolverDir.exists()) {
-            println "Creating sonar-resolver folder at: ${sonarResolverDir}"
-            sonarResolverDir.mkdirs()
-        }
-    }
-}
+
+// Ensure sonar task runs after tests and Jacoco report
 tasks.named('sonar') {
     dependsOn tasks.test
     dependsOn tasks.jacocoTestReport
 }
+
 // Java compiler options
 tasks.withType(JavaCompile) {
     options.annotationProcessorPath = configurations.annotationProcessor
