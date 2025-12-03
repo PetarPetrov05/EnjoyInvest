@@ -27,7 +27,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(@RequestBody RegisterRequest request) {
-        var registerResult = authService.register(request.getEmail(), request.getPassword(),request.getName());
+        var registerResult = authService.register(request.getEmail(), request.getPassword(),request.getName(),request.getUsername());
         if (registerResult == null) {
             return ResponseEntity.status(400).build(); // Bad request (email exists)
         }

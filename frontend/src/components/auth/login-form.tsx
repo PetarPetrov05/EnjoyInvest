@@ -85,19 +85,7 @@ export function LoginForm() {
             )}
           </Button>
 
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Demo accounts:
-              <br />
-              Admin: admin@enjoytransport.com
-              <br />
-              Business: jane@business.com
-              <br />
-              User: bob@example.com
-              <br />
-              Password: password123
-            </p>
-          </div>
+          
         </form>
       </CardContent>
     </Card>

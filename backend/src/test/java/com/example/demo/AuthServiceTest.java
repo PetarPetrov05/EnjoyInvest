@@ -107,7 +107,7 @@ class AuthServiceTest {
         when(roleRepository.findByName("USER")).thenReturn(Optional.of(role));
         when(jwtUtil.generateToken(any(User.class))).thenReturn("jwt-token");
 
-        AuthResult result = authService.register(email, password, name);
+        AuthResult result = authService.register(email, password, name,role.toString());
 
         assertNotNull(result);
         assertEquals("jwt-token", result.getToken());
@@ -123,7 +123,7 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail("existing@example.com")).thenReturn(Optional.of(existingUser));
 
-        AuthResult result = authService.register("existing@example.com", "password", "Name");
+        AuthResult result = authService.register("existing@example.com", "password", "Name", "username");
 
         assertNull(result);
     }

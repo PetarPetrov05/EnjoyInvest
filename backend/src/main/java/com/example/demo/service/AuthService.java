@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.model.Role;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.repoModels.RepoRole;
@@ -36,34 +37,40 @@ public class AuthService {
         var user = userOpt.get();
         if (!passwordEncoder.matches(password, user.getPassword())) return null;
 
-        Set<String> roleNames = user.getRoles().stream()
-                                    .map(RepoRole::getName)
-                                    .collect(Collectors.toSet());
+        Set<Role> roles = user.getRoles().stream()
+                      .<Role>map(repoRole -> Role.valueOf(repoRole.getName()))
+                      .collect(Collectors.toSet());
 
-        User authUser = new User(user.getId(), user.getEmail(), roleNames);
+        User authUser = new User(user.getId(), user.getEmail(), roles,user.getUsername());
         String token = jwtUtil.generateToken(authUser);
 
-        return new AuthResult(token, roleNames);
+        return new AuthResult(token, roles);
     }
 
-    public AuthResult register(String email, String password,String name) {
+    public AuthResult register(String email, String password,String name,String username) {
         if (userRepository.findByEmail(email).isPresent()) return null;
 
         var encodedPassword = passwordEncoder.encode(password);
-        var defaultRole = roleRepository.findByName("USER").orElseThrow();
+
+        // fetch an existing persisted role and assign it (do NOT create a new RepoRole)
+        RepoRole defaultRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new IllegalStateException("Default role USER not found"));
 
         RepoUser newUser = new RepoUser();
         newUser.setEmail(email);
         newUser.setPassword(encodedPassword);
         newUser.setName(name);
-        
+        newUser.setUsername(username);
         newUser.setRoles(Set.of(defaultRole));
 
+        Set<Role> roles = newUser.getRoles().stream()
+                              .map(repoRole -> Role.valueOf(repoRole.getName()))
+                              .collect(Collectors.toSet());
         userRepository.save(newUser);
 
-        User authUser = new User(newUser.getId(), newUser.getEmail(), Set.of("USER"));
+        User authUser = new User(newUser.getId(), newUser.getEmail(),roles,newUser.getUsername());
         String token = jwtUtil.generateToken(authUser);
 
-        return new AuthResult(token, Set.of("USER"));
+        return new AuthResult(token, roles);
     }
 }

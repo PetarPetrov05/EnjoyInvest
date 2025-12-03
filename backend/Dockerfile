@@ -2,28 +2,26 @@
 FROM gradle:8.14.3-jdk21 AS builder
 WORKDIR /app
 
-# Copy Gradle wrapper and gradle folder
 COPY gradlew ./
 COPY gradle ./gradle
-
-# Copy build files
 COPY build.gradle settings.gradle ./
-
-# Cache dependencies
 RUN ./gradlew --version
 
-# Copy source code
 COPY src ./src
-
-# Build fat JAR, skip tests (optional)
 RUN ./gradlew clean build -x test
+
 
 # 2) Run stage
 FROM eclipse-temurin:21-jre AS runner
 WORKDIR /app
 
-# Copy built JAR
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
+COPY wait-for-it.sh /app/wait-for-it.sh
+RUN chmod +x /app/wait-for-it.sh
+
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["./wait-for-it.sh", "db", "5432", "--", "java", "-jar", "app.jar"]
+

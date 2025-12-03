@@ -24,12 +24,20 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+System.out.println("JwtFilter: path=" + path + ", Authorization=" + request.getHeader("Authorization"));
+
+        // Skip JWT check for public endpoints
+        if (path.startsWith("/api/auth/") || path.startsWith("/posters")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String authHeader = request.getHeader("Authorization");
 
