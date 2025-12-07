@@ -125,7 +125,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div id="offers" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredOffers.map((offer) => (
                   <OfferCard key={offer.id} offer={offer} onLike={handleLike} onSave={handleSave} />
                 ))}

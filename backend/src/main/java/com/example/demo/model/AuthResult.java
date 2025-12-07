@@ -7,5 +7,5 @@ import java.util.Set;
 @AllArgsConstructor
 public class AuthResult {
     private String token;
-    private Set<String> roles;
+    private Set<Role> roles;
 }

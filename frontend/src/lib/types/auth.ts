@@ -24,10 +24,8 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
+  username: string
   name: string
   email: string
   password: string
-  accountType: "regular" | "business"
-  companyName?: string
-  businessLicense?: string
 }

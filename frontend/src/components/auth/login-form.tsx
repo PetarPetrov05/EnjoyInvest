@@ -74,7 +74,7 @@ export function LoginForm() {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button id="btn1" type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -85,19 +85,7 @@ export function LoginForm() {
             )}
           </Button>
 
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Demo accounts:
-              <br />
-              Admin: admin@enjoytransport.com
-              <br />
-              Business: jane@business.com
-              <br />
-              User: bob@example.com
-              <br />
-              Password: password123
-            </p>
-          </div>
+          
         </form>
       </CardContent>
     </Card>

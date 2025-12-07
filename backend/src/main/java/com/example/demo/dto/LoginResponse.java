@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import com.example.demo.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,5 +9,5 @@ import java.util.Set;
 @AllArgsConstructor
 public class LoginResponse {
     private String token;
-    private Set<String> roles;
+    private Set<Role> roles;
 }

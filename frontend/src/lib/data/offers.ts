@@ -1,6 +1,20 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/posters";
+const API_BASE = "http://localhost:8080";
+
+const API = axios.create({
+  baseURL: API_BASE,
+});
+
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("enjoy-transport-token");
+  if (token) {
+    if (config.headers) {
+      config.headers.set('Authorization', `Bearer ${token}`);
+    }
+  }
+  return config;
+});
 
 export interface Comment {
   id: number;
@@ -31,14 +45,21 @@ export interface Offer {
   updatedAt: string;
 }
 
+const API_URL = "/posters";
+
 let offersCache: Offer[] = [];
 
 export async function getOffers(): Promise<Offer[]> {
-  if (offersCache.length > 0) return offersCache; 
+  if (offersCache.length > 0) return offersCache;
 
-  const response = await axios.get(API_URL);
+  const response = await API.get(API_URL);
   offersCache = response.data;
   return offersCache;
+}
+
+export async function getOfferById(id: number): Promise<Offer> {
+  const response = await API.get(`${API_URL}/${id}`);
+  return response.data;
 }
 
 export async function getOffersByType(type: string): Promise<Offer[]> {
@@ -64,12 +85,15 @@ export async function searchOffers(query: string): Promise<Offer[]> {
   );
 }
 
-export async function getOfferById(id: number): Promise<Offer> {
-  try {
-    const response = await axios.get(`${API_URL}/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(` Failed to fetch offer with ID ${id}`, error);
-    throw error;
-  }
+// Create a poster (requires auth). The JWT is attached automatically by the interceptor.
+export async function createPoster(posterData: Partial<Offer>) {
+  const response = await API.post(API_URL, posterData);
+  // invalidate cache so next getOffers fetches updated data
+  offersCache = [];
+  return response.data;
+}
+export async function deletePoster(id: number): Promise<void> {
+  await API.delete(`${API_URL}/${id}`);
+  // Clear cache so UI gets fresh data next time
+  offersCache = [];
 }

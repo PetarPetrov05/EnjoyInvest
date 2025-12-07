@@ -44,4 +44,14 @@ public class PosterController {
         }
         return ResponseEntity.status(201).body(createdPoster); // 201 Created
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePoster(@PathVariable Long id) {
+    boolean deleted = posterService.deletePoster(id);
+
+    if (!deleted) {
+        return ResponseEntity.notFound().build(); // 404 Not Found if poster doesn't exist
+    }
+
+    return ResponseEntity.noContent().build(); // 204 No Content if deleted successfully
+    }
 }

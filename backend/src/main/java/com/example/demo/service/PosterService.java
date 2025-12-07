@@ -6,6 +6,7 @@ import com.example.demo.repository.PosterRepository;
 import com.example.demo.repository.repoModels.RepoPoster;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,32 +31,41 @@ public class PosterService {
 
     // Get poster by ID
     public PosterDTO getPosterById(Long id) {
-        RepoPoster repoPoster = posterRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Poster not found with ID: " + id));
-
-        Poster model = mapRepoToModel(repoPoster);
-        return mapModelToDTO(model);
+        return posterRepository.findById(id)
+                .map(this::mapRepoToModel)
+                .map(this::mapModelToDTO)
+                .orElse(null); // return null instead of throwing
     }
 
-    // Create a new poster with edge-case handling
+    // Create a new poster with safe handling
     public PosterDTO createPoster(PosterDTO posterDTO) {
-        if (posterDTO == null) {
-            throw new RuntimeException("Cannot create poster from null DTO");
-        }
-        if (posterDTO.getTitle() == null) {
-            throw new RuntimeException("Poster title cannot be null");
-        }
+        if (posterDTO == null) return null;
+        if (posterDTO.getTitle() == null) return null; // return null to match controller 400
+
         if (posterDTO.getImages() == null) {
             posterDTO.setImages(Collections.emptyList());
         }
 
         Poster poster = mapDTOToModel(posterDTO);
+
+        // Set timestamps if null
+        if (poster.getCreatedAt() == null) poster.setCreatedAt(LocalDateTime.now());
+        poster.setUpdatedAt(LocalDateTime.now());
+
         RepoPoster saved = posterRepository.save(mapModelToRepo(poster));
         return mapModelToDTO(mapRepoToModel(saved));
     }
 
-    // ---------- MAPPERS ----------
+    // Delete poster by ID
+    public boolean deletePoster(Long id) {
+        if (!posterRepository.existsById(id)) {
+            return false;
+        }
+        posterRepository.deleteById(id);
+        return true;
+    }
 
+    // ---------- MAPPERS ----------
     private Poster mapRepoToModel(RepoPoster repo) {
         return new Poster(
                 repo.getId(),

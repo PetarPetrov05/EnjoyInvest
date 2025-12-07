@@ -1,83 +1,81 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-//import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2 } from "lucide-react"
-import { useAuth } from "@/lib/contexts/auth-context"
-import { useRouter } from "next/navigation"
-import type { RegisterData } from "@/lib/types/auth"
-
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { RegisterData } from "@/lib/types/auth";
+import { registerUser } from "@/lib/data/register";
+import { useAuth } from "@/lib/contexts/auth-context";
 export function RegisterForm() {
+  const { register, isLoading: authIsLoading } = useAuth();
   const [formData, setFormData] = useState<RegisterData>({
+    username: "",
     name: "",
     email: "",
     password: "",
-    accountType: "regular",
-    companyName: "",
-    businessLicense: "",
-  })
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const { register, isLoading } = useAuth()
-  const router = useRouter()
+  });
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setSuccess("")
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
     if (formData.password !== confirmPassword) {
-      setError("Passwords do not match!")
-      return
+      setError("Passwords do not match!");
+      return;
     }
 
-    if (formData.accountType === "business" && !formData.companyName) {
-      setError("Company name is required for business accounts.")
-      return
-    }
-
-    const success = await register(formData)
-    if (success) {
-      if (formData.accountType === "business") {
-        setSuccess(
-          "Account created successfully! Your business account is pending approval. You can browse offers but cannot post until approved.",
-        )
-        setTimeout(() => router.push("/"), 3000)
-      } else {
-        router.push("/")
-      }
+    const ok = await register(formData);
+    if (ok) {
+      setSuccess("Registration successful!");
+      router.push("/");
     } else {
-      setError("Email already exists. Please use a different email address.")
+      setError("Registration failed (email may already exist).");
     }
-  }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target
-    if (type === "radio") {
-      setFormData((prev) => ({ ...prev, accountType: value as "regular" | "business" }))
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }))
-    }
-  }
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Create Account</CardTitle>
-        <CardDescription>Join Enjoy Transport to access all features and save your favorite offers.</CardDescription>
+        <CardDescription>Join Enjoy Transport to save offers and post your own.</CardDescription>
       </CardHeader>
+
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error}
+          {error && <p className="text-red-600">{error}</p>}
+          {success && <p className="text-green-600">{success}</p>}
 
-          {success}
+          {/* Username */}
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Your username"
+              required
+              disabled={authIsLoading}
+            />
+          </div>
 
+          {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input
@@ -87,10 +85,11 @@ export function RegisterForm() {
               onChange={handleChange}
               placeholder="Your full name"
               required
-              disabled={isLoading}
+              disabled={authIsLoading}
             />
           </div>
 
+          {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -101,10 +100,11 @@ export function RegisterForm() {
               onChange={handleChange}
               placeholder="your.email@example.com"
               required
-              disabled={isLoading}
+              disabled={authIsLoading}
             />
           </div>
 
+          {/* Password */}
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
@@ -115,10 +115,11 @@ export function RegisterForm() {
               onChange={handleChange}
               placeholder="Create a password"
               required
-              disabled={isLoading}
+              disabled={authIsLoading}
             />
           </div>
 
+          {/* Confirm Password */}
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
@@ -129,71 +130,13 @@ export function RegisterForm() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm your password"
               required
-              disabled={isLoading}
+              disabled={authIsLoading}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Account Type</Label>
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="accountType"
-                  value="regular"
-                  checked={formData.accountType === "regular"}
-                  onChange={handleChange}
-                  className="text-primary"
-                  disabled={isLoading}
-                />
-                <span className="text-sm">Regular User (browse and save offers)</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="accountType"
-                  value="business"
-                  checked={formData.accountType === "business"}
-                  onChange={handleChange}
-                  className="text-primary"
-                  disabled={isLoading}
-                />
-                <span className="text-sm">Business Account (request to post offers)</span>
-              </label>
-            </div>
-          </div>
-
-          {formData.accountType === "business" && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input
-                  id="companyName"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  placeholder="Your company name"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="businessLicense">Business License (Optional)</Label>
-                <Input
-                  id="businessLicense"
-                  name="businessLicense"
-                  value={formData.businessLicense}
-                  onChange={handleChange}
-                  placeholder="Business license number"
-                  disabled={isLoading}
-                />
-              </div>
-            </>
-          )}
-
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
+          {/* Submit */}
+          <Button type="submit" className="w-full" disabled={authIsLoading}>
+            {authIsLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating Account...
@@ -209,5 +152,5 @@ export function RegisterForm() {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

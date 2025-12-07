@@ -1,0 +1,62 @@
+# ------------------------
+# Java / Spring Boot
+# ------------------------
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.log
+
+# Maven / Gradle
+build/
+out/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Spring Boot application properties
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-test.properties
+backend/src/main/resources/application.properties
+# ------------------------
+# IDEs
+# ------------------------
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse / STS ###
+.classpath
+.project
+.settings/
+.apt_generated
+.factorypath
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+# ------------------------
+# Misc
+# ------------------------
+HELP.md
+*.tmp
+*.swp
+.DS_Store

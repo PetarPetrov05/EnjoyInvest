@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { User, Settings, LogOut, Shield, Building } from "lucide-react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import Link from "next/link"
+import { Console } from "console"
 
 export function UserMenu() {
   const { user, logout } = useAuth()
@@ -21,6 +22,7 @@ export function UserMenu() {
   if (!user) return null
 
   const getRoleBadge = () => {
+    console.log("User role:", user.role);
     switch (user.role) {
       case "admin":
         return <Badge variant="destructive">Admin</Badge>
