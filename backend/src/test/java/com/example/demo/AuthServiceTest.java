@@ -1,7 +1,7 @@
 package com.example.demo;
 
 import com.example.demo.model.AuthResult;
-import com.example.demo.model.User;
+import com.example.demo.model.Role;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.repoModels.RepoRole;
@@ -56,13 +56,13 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(rawPassword, encodedPassword)).thenReturn(true);
-        when(jwtUtil.generateToken(any(User.class))).thenReturn("jwt-token");
+        when(jwtUtil.generateToken(any())).thenReturn("jwt-token");
 
         AuthResult result = authService.login(email, rawPassword);
 
         assertNotNull(result);
         assertEquals("jwt-token", result.getToken());
-        assertTrue(result.getRoles().contains("USER"));
+        assertTrue(result.getRoles().contains(Role.USER));
     }
 
     @Test
@@ -97,6 +97,7 @@ class AuthServiceTest {
         String email = "new@example.com";
         String password = "password";
         String name = "New User";
+        String username = "newuser";
         String encodedPassword = "$2a$10$hash";
 
         RepoRole role = new RepoRole();
@@ -105,13 +106,13 @@ class AuthServiceTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
         when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
         when(roleRepository.findByName("USER")).thenReturn(Optional.of(role));
-        when(jwtUtil.generateToken(any(User.class))).thenReturn("jwt-token");
+        when(jwtUtil.generateToken(any())).thenReturn("jwt-token");
 
-        AuthResult result = authService.register(email, password, name,role.toString());
+        AuthResult result = authService.register(email, password, name, username);
 
         assertNotNull(result);
         assertEquals("jwt-token", result.getToken());
-        assertTrue(result.getRoles().contains("USER"));
+        assertTrue(result.getRoles().contains(Role.USER));
 
         verify(userRepository, times(1)).save(any(RepoUser.class));
     }

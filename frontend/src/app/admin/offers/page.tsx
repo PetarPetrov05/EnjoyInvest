@@ -21,7 +21,7 @@ import { useState } from "react"
 
 import { useEffect } from "react";
 
-import { getOffers } from "@/lib/data/offers";
+import { getOffers,deletePoster } from "@/lib/data/offers";
 import type { Offer } from "@/lib/data/offers"
 
 export default function AdminOffersPage() {
@@ -54,12 +54,21 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
     return matchesSearch && matchesType && matchesStatus
   })
 
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this offer?")) {
-      console.log("Delete offer:", id)
-      // In real app, this would call API to delete
+  const handleDelete = async (id: number) => {
+  if (confirm("Are you sure you want to delete this offer?")) {
+    try {
+      await deletePoster(id);
+
+      // Remove deleted offer from UI without refresh
+      setFeaturedOffers((prev) => prev.filter((offer) => offer.id !== id));
+
+      console.log("Offer deleted:", id);
+    } catch (error) {
+      console.error("Failed to delete offer:", error);
+      alert("Could not delete offer. Please try again.");
     }
   }
+};
 
   const handleToggleStatus = (id: number) => {
     console.log("Toggle status for offer:", id)

@@ -28,7 +28,4 @@ export interface RegisterData {
   name: string
   email: string
   password: string
-  accountType: "regular" | "business"
-  companyName?: string
-  businessLicense?: string
 }

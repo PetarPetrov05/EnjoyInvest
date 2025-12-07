@@ -10,26 +10,20 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { RegisterData } from "@/lib/types/auth";
 import { registerUser } from "@/lib/data/register";
-
+import { useAuth } from "@/lib/contexts/auth-context";
 export function RegisterForm() {
-  const { register, isLoading } = useAuth();
-  const router = useRouter();
-  
+  const { register, isLoading: authIsLoading } = useAuth();
   const [formData, setFormData] = useState<RegisterData>({
     username: "",
     name: "",
     email: "",
     password: "",
-    accountType: "regular",
-    companyName: "",
-    businessLicense: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,100 +37,120 @@ export function RegisterForm() {
 
     const ok = await register(formData);
     if (ok) {
-      setSuccess("Registration successful.");
+      setSuccess("Registration successful!");
       router.push("/");
     } else {
-      // AuthProvider.register returns false for failures (including email exists)
       setError("Registration failed (email may already exist).");
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
-    <div className="max-w-md mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">Create Account</h2>
+    <Card>
+      <CardHeader>
+        <CardTitle>Create Account</CardTitle>
+        <CardDescription>Join Enjoy Transport to save offers and post your own.</CardDescription>
+      </CardHeader>
 
-      {error && <div className="text-sm text-red-600 mb-2">{error}</div>}
-      {success && <div className="text-sm text-green-600 mb-2">{success}</div>}
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-600">{error}</p>}
+          {success && <p className="text-green-600">{success}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            className="w-full"
-          />
-        </div>
+          {/* Username */}
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Your username"
+              required
+              disabled={authIsLoading}
+            />
+          </div>
 
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            className="w-full"
-          />
-        </div>
+          {/* Full Name */}
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Your full name"
+              required
+              disabled={authIsLoading}
+            />
+          </div>
 
-        <div>
-          <label htmlFor="name">Full name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            className="w-full"
-          />
-        </div>
+          {/* Email */}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="your.email@example.com"
+              required
+              disabled={authIsLoading}
+            />
+          </div>
 
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            className="w-full"
-          />
-        </div>
+          {/* Password */}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Create a password"
+              required
+              disabled={authIsLoading}
+            />
+          </div>
 
-        <div>
-          <label htmlFor="confirmPassword">Confirm Password</label>
-          <input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            disabled={isLoading}
-            className="w-full"
-          />
-        </div>
+          {/* Confirm Password */}
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your password"
+              required
+              disabled={authIsLoading}
+            />
+          </div>
 
-        <button type="submit" disabled={isLoading} className="w-full py-2 px-4 bg-blue-600 text-white rounded">
-          {isLoading ? "Creating account..." : "Create account"}
-        </button>
-      </form>
-    </div>
+          {/* Submit */}
+          <Button type="submit" className="w-full" disabled={authIsLoading}>
+            {authIsLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Account...
+              </>
+            ) : (
+              "Create Account"
+            )}
+          </Button>
+
+          <p className="text-xs text-muted-foreground text-center">
+            By creating an account, you agree to our Terms of Service and Privacy Policy.
+          </p>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
-function useAuth(): { register: any; isLoading: any; } {
-  throw new Error("Function not implemented.");
-}
-
