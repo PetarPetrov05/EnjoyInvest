@@ -50,7 +50,7 @@ jobs:
           path: backend/build/reports/jacoco/test/html
       # 5️ Analyze code with SonarCloud
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2.2.1
+        uses: SonarSource/sonarqube-scan-action@v6
         with:
           projectKey: PetarPetrov05_EnjoyInvest
           organization: petarpetrov05
