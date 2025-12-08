@@ -50,11 +50,19 @@ jobs:
           path: backend/build/reports/jacoco/test/html
       # 5️ Analyze code with SonarCloud
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        with:
-          projectKey: PetarPetrov05_EnjoyInvest
-          organization: petarpetrov05
-          token: ${{ secrets.SONAR_TOKEN }}
+  uses: SonarSource/sonarqube-scan-action@v6
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  with:
+    args: >
+      -Dsonar.projectKey=PetarPetrov05_EnjoyInvest
+      -Dsonar.organization=petarpetrov05
+      -Dsonar.host.url=https://sonarcloud.io
+      -Dsonar.sources=.
+      -Dsonar.java.binaries=backend/build/classes/java/main
+      -Dsonar.java.test.binaries=backend/build/classes/java/test
+      -Dsonar.java.test.reportPaths=backend/build/test-results/test
+      -Dsonar.coverage.jacoco.xmlReportPaths=backend/build/reports/jacoco/test/jacocoTestReport.xml
       # 6️ Only build & push Docker image on master branch
       - name: Log in to GHCR
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
