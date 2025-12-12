@@ -96,7 +96,7 @@ export default function NewOfferPage() {
     if (!res.ok) throw new Error((await res.text()).toString());
 
     const data = await res.json();
-    console.log("✅ Offer created:", data);
+    console.log(" Offer created:", data);
     router.push("/admin/offers");
   } catch (error) {
     console.error("Error creating offer:", error);

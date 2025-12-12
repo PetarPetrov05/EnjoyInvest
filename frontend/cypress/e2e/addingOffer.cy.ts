@@ -1,3 +1,5 @@
+import { time } from "console"
+
 describe('Admin Dashboard Access', () => {
 
   it('should login and navigate to Admin Dashboard', () => {
@@ -48,9 +50,11 @@ cy.intercept('GET', '/posters').as('getOffers')
 
 // Submit the form
 cy.contains('button', 'Create Offer').click()
-
+// Wait for the fetch request to complete
+cy.wait(1000)
 cy.reload()
 // Assert the new offer exists
 cy.contains('Test Investment Offer', { timeout: 10000 }).should('exist')
   })
 })
+

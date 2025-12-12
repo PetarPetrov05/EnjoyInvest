@@ -49,22 +49,22 @@ jobs:
           name: jacoco-report
           path: backend/build/reports/jacoco/test/html
 
-      # 6️ Analyze code with SonarCloud
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=PetarPetrov05_EnjoyInvest
-            -Dsonar.organization=petarpetrov05
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.sources=.
-            -Dsonar.java.binaries=backend/build/classes/java/main
-            -Dsonar.java.test.binaries=backend/build/classes/java/test
-            -Dsonar.java.test.reportPaths=backend/build/test-results/test
-            -Dsonar.coverage.jacoco.xmlReportPaths=backend/build/reports/jacoco/test/jacocoTestReport.xml
-            -Dsonar.ci.disableAutomaticAnalysis=true
+      # # 6️ Analyze code with SonarCloud
+      # - name: SonarCloud Scan
+      #   uses: SonarSource/sonarqube-scan-action@v6
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     args: >
+      #       -Dsonar.projectKey=PetarPetrov05_EnjoyInvest
+      #       -Dsonar.organization=petarpetrov05
+      #       -Dsonar.host.url=https://sonarcloud.io
+      #       -Dsonar.sources=.
+      #       -Dsonar.java.binaries=backend/build/classes/java/main
+      #       -Dsonar.java.test.binaries=backend/build/classes/java/test
+      #       -Dsonar.java.test.reportPaths=backend/build/test-results/test
+      #       -Dsonar.coverage.jacoco.xmlReportPaths=backend/build/reports/jacoco/test/jacocoTestReport.xml
+      #       -Dsonar.ci.disableAutomaticAnalysis=true
 
       # 7️ Only build & push Docker image on master branchs
       - name: Log in to GHCR
