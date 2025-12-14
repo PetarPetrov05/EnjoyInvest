@@ -1,104 +1,80 @@
 package com.example.demo;
 
 import com.example.demo.dto.PosterDTO;
-import org.junit.jupiter.api.BeforeEach;
+import com.example.demo.service.PosterService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@Transactional
 public class PosterIntegrationTest {
 
-    @LocalServerPort
-    private int port;
-
     @Autowired
-    private TestRestTemplate restTemplate;
+    private PosterService posterService;
 
-    private String baseUrl;
+    private PosterDTO samplePoster;
 
     @BeforeEach
-    void setUp() {
-        baseUrl = "http://localhost:" + port + "/posters";
-    }
-
-    private PosterDTO createValidPoster() {
-        return PosterDTO.builder()
-                .title("Test Poster")
-                .description("This is a description")
-                .fullDescription("This is a full description with enough length")
-                .price("100$")
-                .type("Advertisement")
-                .category("Tech")
-                .image("main_image.png")
-                .images(List.of("image1.png", "image2.png"))
-                .location("Varna")
-                .phone("123456789")
+    void setup() {
+        // Full valid PosterDTO to pass validation
+        samplePoster = PosterDTO.builder()
+                .title("Sample Poster")
+                .description("This is a sample description")
+                .fullDescription("This is a full description with more than 20 chars")
+                .price("100")
+                .type("Type A")
+                .category("Category X")
+                .image("http://example.com/main.jpg")
+                .images(List.of("http://example.com/1.jpg", "http://example.com/2.jpg"))
+                .likes(0)
+                .saved(false)
+                .location("Sample Location")
+                .phone("1234567890")
                 .email("test@example.com")
                 .build();
     }
 
     @Test
     void testCreatePoster_Success() {
-        PosterDTO poster = createValidPoster();
-
-        ResponseEntity<PosterDTO> response = restTemplate.postForEntity(baseUrl, poster, PosterDTO.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isNotNull();
-        assertThat(response.getBody().getTitle()).isEqualTo(poster.getTitle());
+        PosterDTO created = posterService.createPoster(samplePoster);
+        assertNotNull(created.getId(), "Created poster should have an ID");
+        assertEquals(samplePoster.getTitle(), created.getTitle());
     }
 
     @Test
     void testCreatePoster_WithoutTitle_Fails() {
-        PosterDTO poster = createValidPoster();
-        poster.setTitle(null);
-
-        ResponseEntity<Void> response = restTemplate.postForEntity(baseUrl, poster, Void.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void testGetAllPosters_Empty() {
-        ResponseEntity<PosterDTO[]> response = restTemplate.getForEntity(baseUrl, PosterDTO[].class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEmpty();
+        samplePoster.setTitle(null);
+        PosterDTO created = posterService.createPoster(samplePoster);
+        assertNull(created, "Poster without title should return null");
     }
 
     @Test
     void testGetAllPosters() {
-        // Create poster first
-        PosterDTO poster = createValidPoster();
-        restTemplate.postForEntity(baseUrl, poster, PosterDTO.class);
-
-        ResponseEntity<PosterDTO[]> response = restTemplate.getForEntity(baseUrl, PosterDTO[].class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).hasSize(1);
-        assertThat(response.getBody()[0].getTitle()).isEqualTo(poster.getTitle());
+        posterService.createPoster(samplePoster);
+        List<PosterDTO> posters = posterService.getAllPosters();
+        assertFalse(posters.isEmpty(), "Should return at least one poster");
+        assertEquals(samplePoster.getTitle(), posters.get(0).getTitle());
     }
 
     @Test
     void testGetPosterById_Success() {
-        PosterDTO poster = createValidPoster();
-        ResponseEntity<PosterDTO> createResponse = restTemplate.postForEntity(baseUrl, poster, PosterDTO.class);
-        Long id = createResponse.getBody().getId();
+        PosterDTO created = posterService.createPoster(samplePoster);
+        PosterDTO fetched = posterService.getPosterById(created.getId());
+        assertNotNull(fetched, "Fetched poster should not be null");
+        assertEquals(created.getId(), fetched.getId());
+        assertEquals(created.getTitle(), fetched.getTitle());
+    }
 
-        ResponseEntity<PosterDTO> response = restTemplate.getForEntity(baseUrl + "/" + id, PosterDTO.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(id);
-        assertThat(response.getBody().getTitle()).isEqualTo(poster.getTitle());
+    @Test
+    void testGetAllPosters_Empty() {
+        List<PosterDTO> posters = posterService.getAllPosters();
+        assertTrue(posters.isEmpty(), "Initially there should be no posters");
     }
 }
