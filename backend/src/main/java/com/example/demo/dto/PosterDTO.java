@@ -1,93 +1,70 @@
 package com.example.demo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PosterDTO {
+
     private Long id;
+
+    @NotBlank(message = "Title is required")
+    @Size(min = 4, max = 255, message = "Title must be at least 4 characters")
     private String title;
+
+    @NotBlank(message = "Description is required")
+    @Size(min = 10, max = 1000, message = "Description must be at least 10 characters")
     private String description;
+
+    @NotBlank(message = "Full description is required")
+    @Size(min = 20, max = 3000, message = "Full description must be at least 20 characters")
     private String fullDescription;
+
+    @NotBlank(message = "Price is required")
     private String price;
+
+    @NotBlank(message = "Type is required")
     private String type;
+
+    @NotBlank(message = "Category is required")
     private String category;
+
+    @NotBlank(message = "Main image is required")
     private String image;
-    private List<String> images;
+
+    @Size(max = 10, message = "You can upload up to 10 images")
+    private List<@NotBlank String> images;
+
+    @Min(value = 0, message = "Likes cannot be negative")
     private Integer likes;
+
     private Boolean saved;
+
+    private Boolean isLiked;
+
+    @NotBlank(message = "Location is required")
     private String location;
+
+    @NotBlank(message = "Phone is required")
     private String phone;
+
+    @Email(message = "Email must be valid")
+    @NotBlank(message = "Email is required")
     private String email;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
-
-     public PosterDTO(Long id, String title, String description, String fullDescription, String price, String type,
-                     String category, String image, List<String> images, Integer likes, Boolean saved,
-                     String location, String phone, String email, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.fullDescription = fullDescription;
-        this.price = price;
-        this.type = type;
-        this.category = category;
-        this.image = image;
-        this.images = images;
-        this.likes = likes;
-        this.saved = saved;
-        this.location = location;
-        this.phone = phone;
-        this.email = email;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public String getFullDescription() { return fullDescription; }
-    public void setFullDescription(String fullDescription) { this.fullDescription = fullDescription; }
-
-    public String getPrice() { return price; }
-    public void setPrice(String price) { this.price = price; }
-
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public String getImage() { return image; }
-    public void setImage(String image) { this.image = image; }
-
-    public List<String> getImages() { return images; }
-    public void setImages(List<String> images) { this.images = images; }
-
-    public Integer getLikes() { return likes; }
-    public void setLikes(Integer likes) { this.likes = likes; }
-
-    public Boolean getSaved() { return saved; }
-    public void setSaved(Boolean saved) { this.saved = saved; }
-
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    private List<CommentDTO> comments;
 }

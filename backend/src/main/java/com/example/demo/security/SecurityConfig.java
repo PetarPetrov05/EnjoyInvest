@@ -32,12 +32,14 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() 
-                .requestMatchers("/posters/**").permitAll()
-                .requestMatchers("/posters").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
-                .anyRequest().authenticated()
-            )
+    .requestMatchers(HttpMethod.GET, "/posters/**").permitAll()
+    .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+    .requestMatchers(HttpMethod.POST, "/posters/**").authenticated()
+    .requestMatchers(HttpMethod.PUT, "/posters/**").authenticated()
+    .requestMatchers(HttpMethod.DELETE, "/posters/**").authenticated()
+    .requestMatchers(HttpMethod.POST, "/comments/**").authenticated() // <-- add this
+    .anyRequest().authenticated()
+)
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );

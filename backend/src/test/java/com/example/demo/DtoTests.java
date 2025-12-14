@@ -1,29 +1,30 @@
 package com.example.demo;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.time.LocalDateTime;
-
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import com.example.demo.model.Role;
+
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
 import com.example.demo.dto.PosterDTO;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.CommentDTO;
+import com.example.demo.model.Role;
 
 public class DtoTests {
+
     @Test
     void testPosterDTO_GettersAndSetters() {
         // Arrange
         Long id = 1L;
         String title = "Sample Poster";
-        String description = "Short description";
-        String fullDescription = "Full description";
+        String description = "Short descriptionFull descriptionShort descriptionFull description";
+        String fullDescription = "Full descriptionFull descriptionFull descriptionFull descriptionFull descriptionFull description";
         String price = "$100";
         String type = "For Sale";
         String category = "Electronics";
@@ -38,10 +39,26 @@ public class DtoTests {
         LocalDateTime updatedAt = LocalDateTime.now();
 
         // Act
-        PosterDTO poster = new PosterDTO(
-                id, title, description, fullDescription, price, type, category,
-                image, images, likes, saved, location, phone, email, createdAt, updatedAt
-        );
+        PosterDTO poster = PosterDTO.builder()
+                .id(id)
+                .title(title)
+                .description(description)
+                .fullDescription(fullDescription)
+                .price(price)
+                .type(type)
+                .category(category)
+                .image(image)
+                .images(images)
+                .likes(likes)
+                .saved(saved)
+                .isLiked(null)
+                .location(location)
+                .phone(phone)
+                .email(email)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .comments(null)
+                .build();
 
         // Assert - Getters
         assertEquals(id, poster.getId());
@@ -100,6 +117,7 @@ public class DtoTests {
         assertEquals(newCreatedAt, poster.getCreatedAt());
         assertEquals(newUpdatedAt, poster.getUpdatedAt());
     }
+
     @Test
     void testLoginRequest_GettersAndSetters() {
         LoginRequest loginRequest = new LoginRequest();
