@@ -407,4 +407,16 @@ void testPosterModel_AllLombokMethods() {
     // no-args constructor
     assertNotNull(new Poster());
 }
+@Test
+void testEqualsAndHashCode() {
+    PosterDTO dto1 = new PosterDTO();
+    PosterDTO dto2 = new PosterDTO();
+    dto1.setId(1L);
+    dto2.setId(1L);
+
+    assertEquals(dto1, dto2);
+    assertEquals(dto1.hashCode(), dto2.hashCode());
+    assertNotEquals(dto1, null);
+    assertNotEquals(dto1, "string");
+}
 }

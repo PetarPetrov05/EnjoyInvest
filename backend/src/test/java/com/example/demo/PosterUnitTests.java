@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import com.example.demo.dto.PosterDTO;
+import com.example.demo.model.Poster;
 import com.example.demo.repository.LikeRepository;
 import com.example.demo.repository.PosterRepository;
 import com.example.demo.repository.UserRepository;
@@ -225,5 +226,54 @@ public class PosterUnitTests {
 
         assertFalse(result);
         verify(likeRepository).delete(like);
+    }
+    @Test
+void testEqualsAndHashCode() {
+    Poster p1 = new Poster();
+    Poster p2 = new Poster();
+
+    // same reference
+    assertEquals(p1, p1);
+
+    // null comparison
+    assertNotEquals(p1, null);
+
+    // different type
+    assertNotEquals(p1, "string");
+
+    // different ids
+    p1.setId(1L);
+    p2.setId(2L);
+    assertNotEquals(p1, p2);
+
+    // same ids
+    p2.setId(1L);
+    assertEquals(p1, p2);
+
+    // hashCode
+    assertEquals(p1.hashCode(), p2.hashCode());
+}
+@Test
+    void testToString() {
+        Poster poster = Poster.builder()
+                .id(1L)
+                .title("Test")
+                .description("Desc")
+                .fullDescription("Full Desc")
+                .price("100")
+                .type("Type")
+                .category("Cat")
+                .image("img.jpg")
+                .images(Collections.emptyList())
+                .likes(5)
+                .saved(true)
+                .location("Location")
+                .phone("12345")
+                .email("test@test.com")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        assertNotNull(poster.toString()); // call toString to cover it
     }
 }
