@@ -8,6 +8,7 @@ import java.util.Set;
 @Table(name = "users")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
+@Builder
 public class RepoUser {
 
     @Id
