@@ -95,11 +95,15 @@ tasks.jacocoTestReport {
 
 // SonarQube configuration
 sonarqube {
+    sonarqube {
     properties {
         property "sonar.projectKey", "PetarPetrov05_EnjoyInvest"
         property "sonar.organization", "petarpetrov05"
         property "sonar.host.url", "https://sonarcloud.io"
+
         property "sonar.java.binaries", "build/classes/java/main"
+        property "sonar.java.libraries", files(configurations.runtimeClasspath) // <-- added
+
         property "sonar.junit.reportPaths", "build/test-results/test"
         property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
         property "sonar.coverage.exclusions",
@@ -107,6 +111,7 @@ sonarqube {
                 "**/repository/repoModels/**," +
                 "**/*DTO.java"
     }
+}
 }
 // Ensure sonar task runs after tests and Jacoco report
 tasks.named('sonar') {
