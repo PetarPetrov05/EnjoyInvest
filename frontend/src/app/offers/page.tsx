@@ -11,8 +11,10 @@ import { Offer } from "@/lib/data/offers"
 import { OfferCard } from "@/components/offer-card"
 import { useEffect } from "react";
 import { getOffers } from "@/lib/data/offers";
+import { useTranslation } from 'react-i18next';
 
 export default function OffersPage() {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterCategory, setFilterCategory] = useState("all")
@@ -53,9 +55,9 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
       <section className="py-12 bg-muted/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">All Offers</h1>
+            <h1 className="text-4xl font-bold mb-4">{t('offers.title')}</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Browse our complete selection of trucks for rent, trucks for sale, and organized transport trips.
+              {t('offers.description')}
             </p>
           </div>
 
@@ -64,7 +66,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search offers..."
+                placeholder={t('offers.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -73,26 +75,26 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
 
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by type" />
+                <SelectValue placeholder={t('offers.filterByType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="For Rent">For Rent</SelectItem>
-                <SelectItem value="For Sale">For Sale</SelectItem>
-                <SelectItem value="Trip">Trips</SelectItem>
+                <SelectItem value="all">{t('offers.allTypes')}</SelectItem>
+                <SelectItem value="For Rent">{t('offers.forRent')}</SelectItem>
+                <SelectItem value="For Sale">{t('offers.forSale')}</SelectItem>
+                <SelectItem value="Trip">{t('offers.trips')}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by category" />
+                <SelectValue placeholder={t('offers.filterByCategory')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="Heavy Duty">Heavy Duty</SelectItem>
-                <SelectItem value="Light Duty">Light Duty</SelectItem>
-                <SelectItem value="Commercial">Commercial</SelectItem>
-                <SelectItem value="Tourism">Tourism</SelectItem>
+                <SelectItem value="all">{t('offers.allCategories')}</SelectItem>
+                <SelectItem value="Heavy Duty">{t('offers.heavyDuty')}</SelectItem>
+                <SelectItem value="Light Duty">{t('offers.lightDuty')}</SelectItem>
+                <SelectItem value="Commercial">{t('offers.commercial')}</SelectItem>
+                <SelectItem value="Tourism">{t('offers.tourism')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -104,7 +106,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {filteredOffers.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">No offers found matching your criteria.</p>
+              <p className="text-muted-foreground text-lg">{t('offers.noOffersFound')}</p>
               <Button
                 variant="outline"
                 onClick={() => {
@@ -114,14 +116,14 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
                 }}
                 className="mt-4"
               >
-                Clear Filters
+                {t('offers.clearFilters')}
               </Button>
             </div>
           ) : (
             <>
               <div className="flex justify-between items-center mb-6">
                 <p className="text-muted-foreground">
-                  Showing {filteredOffers.length} of {featuredOffers  .length} offers
+                  {t('offers.showingResults', { count: filteredOffers.length, total: featuredOffers.length })}
                 </p>
               </div>
 

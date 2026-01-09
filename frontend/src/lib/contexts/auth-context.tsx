@@ -13,7 +13,9 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/auth";
+const API_URL = (typeof window !== "undefined")
+  ? `${window.location.protocol}//${window.location.hostname}:8080/api/auth`
+  : "http://localhost:8080/api/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({

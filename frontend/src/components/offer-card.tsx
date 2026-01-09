@@ -7,6 +7,7 @@ import { Heart, MessageCircle, Bookmark } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import type { Offer } from "@/lib/data/offers"
+import { BACKEND_URL } from "@/lib/data/offers"
 
 interface OfferCardProps {
   offer: Offer
@@ -33,7 +34,7 @@ export function OfferCard({ offer, onLike, onSave }: OfferCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative">
-        <img src={offer.image || "/placeholder.svg"} alt={offer.title} className="w-full h-48 object-cover" />
+        <img src={offer.image ? `${BACKEND_URL}/images/${offer.image}` : "/placeholder.svg"} alt={offer.title} className="w-full h-48 object-cover" />
         <Badge
           className="absolute top-2 right-2"
           variant={offer.type === "For Rent" ? "default" : offer.type === "For Sale" ? "secondary" : "outline"}

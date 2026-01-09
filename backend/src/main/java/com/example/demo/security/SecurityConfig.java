@@ -2,6 +2,7 @@ package com.example.demo.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -34,6 +36,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
     .requestMatchers(HttpMethod.GET, "/posters/**").permitAll()
     .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+    .requestMatchers("/api/auth/users", "/api/auth/users/**").authenticated()
+    .requestMatchers("/images/**").permitAll()
     .requestMatchers(HttpMethod.POST, "/posters/**").authenticated()
     .requestMatchers(HttpMethod.PUT, "/posters/**").authenticated()
     .requestMatchers(HttpMethod.DELETE, "/posters/**").authenticated()

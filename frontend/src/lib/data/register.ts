@@ -1,7 +1,9 @@
 import axios from "axios";
 import type { RegisterData } from "../types/auth"; // adjust path
 
-const API_BASE_URL = "http://localhost:8080/api/auth"; // your backend URL
+const API_BASE_URL = (typeof window !== "undefined")
+  ? `${window.location.protocol}//${window.location.hostname}:8080/api/auth`
+  : "http://localhost:8080/api/auth";
 
 export const registerUser = async (data: RegisterData) => {
   try {

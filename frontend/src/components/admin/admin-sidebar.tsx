@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { LayoutDashboard, Truck, MessageSquare, Users, Settings, BarChart3, FileText, Shield, Home } from "lucide-react"
+import { LayoutDashboard, Truck, MessageSquare, Users, Settings, Shield, Home } from "lucide-react"
 
 const sidebarItems = [
   {
@@ -30,16 +30,6 @@ const sidebarItems = [
     href: "/admin/accounts",
     icon: Users,
     badge: "2",
-  },
-  {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Reports",
-    href: "/admin/reports",
-    icon: FileText,
   },
   {
     title: "Settings",

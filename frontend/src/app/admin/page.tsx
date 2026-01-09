@@ -1,9 +1,12 @@
+"use client"
+
 import { AdminLayout } from "@/components/admin/admin-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Truck, Users, MessageSquare, TrendingUp, Eye, Heart, Plus } from "lucide-react"
 import Link from "next/link"
+import { useTranslation } from 'react-i18next'
 
 // Mock data for dashboard
 const dashboardStats = {
@@ -49,19 +52,21 @@ const recentActivity = [
 ]
 
 export default function AdminDashboard() {
+  const { t } = useTranslation()
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back! Here's what's happening with your business.</p>
+            <h1 className="text-3xl font-bold">{t('admin.dashboard')}</h1>
+            <p className="text-muted-foreground">{t('admin.welcomeMessage')}</p>
           </div>
           <Button asChild>
             <Link href="/admin/offers/new">
               <Plus className="mr-2 h-4 w-4" />
-              Add New Offer
+              {t('admin.addNewOffer')}
             </Link>
           </Button>
         </div>
@@ -144,12 +149,6 @@ export default function AdminDashboard() {
                 <Link href="/admin/messages">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Check Messages ({dashboardStats.pendingMessages})
-                </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-start bg-transparent" asChild>
-                <Link href="/admin/analytics">
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  View Analytics
                 </Link>
               </Button>
             </CardContent>

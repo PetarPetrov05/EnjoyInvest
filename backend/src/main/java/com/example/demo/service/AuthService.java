@@ -9,12 +9,18 @@ import com.example.demo.model.AuthResult;
 import com.example.demo.model.User;
 import com.example.demo.security.JwtUtil;
 import com.example.demo.util.LogMessages;
+
+import jakarta.transaction.Transactional;
+
+import com.example.demo.dto.UserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,5 +94,45 @@ public class AuthService {
 
         logger.info(LogMessages.REGISTER_SUCCESS, email);
         return new AuthResult(token, roles);
+    }
+
+    public List<UserDTO> getAllUsers() {
+        List<RepoUser> repoUsers = userRepository.findAll();
+        return repoUsers.stream()
+                .map(this::convertToUserDTO)
+                .collect(Collectors.toList());
+    }
+
+@Transactional
+public UserDTO updateUserRole(Long userId, String roleName) {
+    RepoUser user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+    RepoRole role = roleRepository.findByName(roleName.toUpperCase())
+            .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+
+    user.getRoles().clear();
+
+    user.getRoles().add(role);
+
+    userRepository.save(user);
+
+    return convertToUserDTO(user);
+}
+    private UserDTO convertToUserDTO(RepoUser repoUser) {
+        Set<String> roles = repoUser.getRoles().stream()
+                .map(repoRole -> repoRole.getName())
+                .collect(Collectors.toSet());
+
+        return new UserDTO(
+                repoUser.getId(),
+                repoUser.getUsername(),
+                repoUser.getEmail(),
+                repoUser.getName(),
+                roles,
+                null, // createdAt - would need to add to entity
+                null, // lastLogin - would need to add to entity
+                true  // isApproved - assuming all users are approved for now
+        );
     }
 }

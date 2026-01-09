@@ -13,11 +13,12 @@ import { ArrowLeft, Plus, X, Upload } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-
+import { useAuth } from "@/lib/contexts/auth-context";
+import { createPoster } from "@/lib/data/offers";
 export default function NewOfferPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const { getAuthHeader } = useAuth();
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -29,8 +30,8 @@ export default function NewOfferPage() {
     location: "",
     contactPhone: "",
     contactEmail: "",
-    mainImage: "",
-    additionalImages: [] as string[],
+    mainImage: null as File | null,
+    additionalImages: [] as (File | null)[],
   })
 
   // Specifications state
@@ -46,13 +47,13 @@ export default function NewOfferPage() {
   const addAdditionalImage = () => {
     setFormData((prev) => ({
       ...prev,
-      additionalImages: [...prev.additionalImages, ""],
+      additionalImages: [...prev.additionalImages, null],
     }))
   }
 
-  const updateAdditionalImage = (index: number, value: string) => {
+  const updateAdditionalImage = (index: number, file: File | null) => {
     const newImages = [...formData.additionalImages]
-    newImages[index] = value
+    newImages[index] = file
     setFormData((prev) => ({ ...prev, additionalImages: newImages }))
   }
 
@@ -67,37 +68,29 @@ export default function NewOfferPage() {
   e.preventDefault();
   setIsSubmitting(true);
 
-  
-  const newOffer = {
-    title: formData.title,
-    description: formData.description,
-    fullDescription: formData.fullDescription,
-    price: formData.price,
-    type: formData.type,
-    category: formData.category,
-    image: formData.mainImage,
-    images: formData.additionalImages,
-    location: formData.location,
-    phone: formData.contactPhone,
-    email: formData.contactEmail,
-    likes: 0,
-    saved: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  const formDataObj = new FormData();
+  formDataObj.append('title', formData.title);
+  formDataObj.append('description', formData.description);
+  formDataObj.append('fullDescription', formData.fullDescription);
+  formDataObj.append('price', formData.price);
+  formDataObj.append('type', formData.type);
+  formDataObj.append('category', formData.category);
+  formDataObj.append('location', formData.location);
+  formDataObj.append('phone', formData.contactPhone);
+  formDataObj.append('email', formData.contactEmail);
+  if (formData.mainImage) {
+    formDataObj.append('image', formData.mainImage);
+  }
+  formData.additionalImages.forEach((file) => {
+    if (file) {
+      formDataObj.append('images', file);
+    }
+  });
 
   try {
-    const res = await fetch("http://localhost:8080/posters", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newOffer),
-    });
-
-    if (!res.ok) throw new Error((await res.text()).toString());
-
-    const data = await res.json();
-    console.log(" Offer created:", data);
-    router.push("/admin/offers");
+    const data = await createPoster(formDataObj);
+    console.log("Offer created:", data);
+    router.push("/admin/offers"); // redirect after success
   } catch (error) {
     console.error("Error creating offer:", error);
   } finally {
@@ -224,23 +217,20 @@ export default function NewOfferPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="mainImage">Main Image URL *</Label>
+                <Label htmlFor="mainImage">Main Image *</Label>
                 <div className="flex gap-2">
                   <Input
                     id="mainImage"
-                    placeholder="https://example.com/image.jpg or /placeholder.svg?height=400&width=600"
-                    value={formData.mainImage}
-                    onChange={(e) => handleInputChange("mainImage", e.target.value)}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFormData(prev => ({...prev, mainImage: e.target.files ? e.target.files[0] : null}))}
                     required
                   />
-                  <Button type="button" variant="outline" size="icon">
-                    <Upload className="h-4 w-4" />
-                  </Button>
                 </div>
                 {formData.mainImage && (
                   <div className="mt-2">
                     <img
-                      src={formData.mainImage || "/placeholder.svg"}
+                      src={URL.createObjectURL(formData.mainImage)}
                       alt="Main preview"
                       className="w-full max-w-md h-48 object-cover rounded-lg border"
                     />
@@ -257,15 +247,24 @@ export default function NewOfferPage() {
                   </Button>
                 </div>
                 {formData.additionalImages.map((image, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder="https://example.com/image.jpg"
-                      value={image}
-                      onChange={(e) => updateAdditionalImage(index, e.target.value)}
-                    />
-                    <Button type="button" variant="outline" size="icon" onClick={() => removeAdditionalImage(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
+                  <div key={index} className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => updateAdditionalImage(index, e.target.files ? e.target.files[0] : null)}
+                      />
+                      <Button type="button" variant="outline" size="icon" onClick={() => removeAdditionalImage(index)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {image && (
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`Additional ${index + 1}`}
+                        className="w-full max-w-md h-32 object-cover rounded-lg border"
+                      />
+                    )}
                   </div>
                 ))}
               </div>

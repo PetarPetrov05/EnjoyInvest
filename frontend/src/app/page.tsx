@@ -24,8 +24,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-
-      {/* Hero Section */}
+{/* 
+      {/* Hero Section *
       <section className="relative bg-gradient-to-r from-primary/10 to-accent/10 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-6">
@@ -46,7 +46,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
     
 
