@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.dto.UserDTO;
 import com.example.demo.model.AuthResult;
 import com.example.demo.model.Role;
 import com.example.demo.repository.RoleRepository;
@@ -15,10 +16,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -127,5 +131,97 @@ class AuthServiceTest {
         AuthResult result = authService.register("existing@example.com", "password", "Name", "username");
 
         assertNull(result);
+    }
+
+    @Test
+    void testGetAllUsers_ReturnsMappedDTOs() {
+        RepoRole role1 = new RepoRole();
+        role1.setName("USER");
+
+        RepoUser user1 = new RepoUser();
+        user1.setId(1L);
+        user1.setUsername("user1");
+        user1.setEmail("user1@test.com");
+        user1.setName("User One");
+        user1.setRoles(Set.of(role1));
+
+        when(userRepository.findAll()).thenReturn(List.of(user1));
+
+        List<UserDTO> result = authService.getAllUsers();
+
+        assertEquals(1, result.size());
+        UserDTO dto = result.get(0);
+        assertEquals(user1.getId(), dto.getId());
+        assertEquals(user1.getUsername(), dto.getUsername());
+        assertEquals(user1.getEmail(), dto.getEmail());
+        assertTrue(dto.getRoles().contains("USER"));
+    }
+
+    @Test
+void testUpdateUserRole_Success() {
+    RepoRole newRole = new RepoRole();
+    newRole.setName("ADMIN");
+
+    RepoRole oldRole = new RepoRole();
+    oldRole.setName("USER");
+
+    RepoUser user = new RepoUser();
+    user.setId(1L);
+    user.setRoles(new HashSet<>(Set.of(oldRole))); // <- mutable set
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    when(roleRepository.findByName("ADMIN")).thenReturn(Optional.of(newRole));
+    when(userRepository.save(any(RepoUser.class))).thenReturn(user);
+
+    UserDTO updatedDTO = authService.updateUserRole(1L, "ADMIN");
+
+    assertNotNull(updatedDTO);
+    assertTrue(updatedDTO.getRoles().contains("ADMIN"));
+    verify(userRepository, times(1)).save(user);
+}
+    @Test
+    void testUpdateUserRole_UserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                authService.updateUserRole(1L, "ADMIN"));
+
+        assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateUserRole_RoleNotFound() {
+        RepoUser user = new RepoUser();
+        user.setId(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findByName("ADMIN")).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                authService.updateUserRole(1L, "ADMIN"));
+
+        assertEquals("Role not found", exception.getMessage());
+    }
+
+    @Test
+    void testConvertToUserDTO_MappingRolesCorrectly() throws Exception {
+        RepoRole role = new RepoRole();
+        role.setName("USER");
+
+        RepoUser user = new RepoUser();
+        user.setId(1L);
+        user.setUsername("user1");
+        user.setEmail("user1@test.com");
+        user.setName("User One");
+        user.setRoles(Set.of(role));
+
+        var method = AuthService.class.getDeclaredMethod("convertToUserDTO", RepoUser.class);
+        method.setAccessible(true);
+        UserDTO dto = (UserDTO) method.invoke(authService, user);
+
+        assertEquals(user.getId(), dto.getId());
+        assertEquals("user1", dto.getUsername());
+        assertEquals("user1@test.com", dto.getEmail());
+        assertTrue(dto.getRoles().contains("USER"));
+        assertTrue(dto.isApproved());
     }
 }
