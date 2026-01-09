@@ -92,7 +92,19 @@ tasks.jacocoTestReport {
         csv.required = false
     }
 }
-
+tasks.jacocoTestReport {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/dto/**',
+                    '**/*DTO.class',
+                    '**/repository/repoModels/**',
+                    '**/*Builder.class',
+                    '**/model/**'
+            ])
+        }))
+    }
+}
 // SonarQube configuration
 sonarqube {
     sonarqube {

@@ -196,7 +196,7 @@ public class PosterController {
         }
     }
 
-    private String saveFile(MultipartFile file) {
+    public String saveFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return null;
         }

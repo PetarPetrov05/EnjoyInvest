@@ -8,11 +8,16 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dto.CreatePosterRequest;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
 import com.example.demo.dto.PosterDTO;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.UpdatePosterRequest;
+import com.example.demo.dto.UserDTO;
 import com.example.demo.dto.CommentDTO;
 import com.example.demo.dto.CommentRequest;
 import com.example.demo.model.Poster;
@@ -419,4 +424,181 @@ void testEqualsAndHashCode() {
     assertNotEquals(dto1, null);
     assertNotEquals(dto1, "string");
 }
+  @Test
+    void testUpdatePosterRequest_AllMethods() {
+        MultipartFile image = new MockMultipartFile(
+                "image", "image.jpg", "image/jpeg", "img".getBytes()
+        );
+
+        MultipartFile extra1 = new MockMultipartFile("i1", "1.jpg", "image/jpeg", "1".getBytes());
+        MultipartFile extra2 = new MockMultipartFile("i2", "2.jpg", "image/jpeg", "2".getBytes());
+        List<MultipartFile> images = List.of(extra1, extra2);
+
+        UpdatePosterRequest req1 = UpdatePosterRequest.builder()
+                .title("Title")
+                .description("Description")
+                .fullDescription("Full Description")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        UpdatePosterRequest req2 = UpdatePosterRequest.builder()
+                .title("Title")
+                .description("Description")
+                .fullDescription("Full Description")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        // equals & hashCode
+        assertEquals(req1, req2);
+        assertEquals(req1.hashCode(), req2.hashCode());
+        assertNotEquals(req1, null);
+        assertNotEquals(req1, new Object());
+
+        // getters
+        assertEquals("Title", req1.getTitle());
+        assertEquals(images, req1.getImages());
+
+        // setters
+        req1.setTitle("New");
+        assertEquals("New", req1.getTitle());
+
+        // toString
+        assertNotNull(req1.toString());
+
+        // no-args constructor
+        assertNotNull(new UpdatePosterRequest());
+    }
+    @Test
+    void testCreatePosterRequest_AllMethods() {
+        MultipartFile image = new MockMultipartFile(
+                "image", "image.jpg", "image/jpeg", "img".getBytes()
+        );
+
+        MultipartFile extra = new MockMultipartFile("i1", "1.jpg", "image/jpeg", "1".getBytes());
+        List<MultipartFile> images = List.of(extra);
+
+        CreatePosterRequest req1 = CreatePosterRequest.builder()
+                .title("Valid Title")
+                .description("Valid description text")
+                .fullDescription("This is a valid full description with enough length")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        CreatePosterRequest req2 = CreatePosterRequest.builder()
+                .title("Valid Title")
+                .description("Valid description text")
+                .fullDescription("This is a valid full description with enough length")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        // equals & hashCode
+        assertEquals(req1, req2);
+        assertEquals(req1.hashCode(), req2.hashCode());
+        assertNotEquals(req1, null);
+        assertNotEquals(req1, new Object());
+
+        // getters
+        assertEquals("Valid Title", req1.getTitle());
+        assertEquals(images, req1.getImages());
+
+        // setters
+        req1.setTitle("New Title");
+        assertEquals("New Title", req1.getTitle());
+
+        // toString
+        assertNotNull(req1.toString());
+
+        // no-args constructor
+        assertNotNull(new CreatePosterRequest());
+    }
+    @Test
+    void testUserDTO_AllMethods() {
+        LocalDateTime now = LocalDateTime.now();
+
+        UserDTO user1 = new UserDTO(
+                1L,
+                "john",
+                "john@test.com",
+                "John Doe",
+                Set.of("USER", "ADMIN"),
+                now,
+                now,
+                true
+        );
+
+        UserDTO user2 = new UserDTO(
+                1L,
+                "john",
+                "john@test.com",
+                "John Doe",
+                Set.of("USER", "ADMIN"),
+                now,
+                now,
+                true
+        );
+
+        // equals & hashCode (covers canEqual)
+        assertEquals(user1, user2);
+        assertEquals(user1.hashCode(), user2.hashCode());
+        assertNotEquals(user1, null);
+        assertNotEquals(user1, new Object());
+
+        UserDTO different = new UserDTO();
+        different.setId(2L);
+        assertNotEquals(user1, different);
+
+        // getters
+        assertEquals(1L, user1.getId());
+        assertEquals("john", user1.getUsername());
+        assertEquals("john@test.com", user1.getEmail());
+        assertEquals("John Doe", user1.getName());
+        assertEquals(Set.of("USER", "ADMIN"), user1.getRoles());
+        assertEquals(now, user1.getCreatedAt());
+        assertEquals(now, user1.getLastLogin());
+        assertTrue(user1.isApproved());
+
+        // setters
+        user1.setUsername("newuser");
+        user1.setApproved(false);
+        assertEquals("newuser", user1.getUsername());
+        assertFalse(user1.isApproved());
+
+        // toString
+        String toString = user1.toString();
+        assertNotNull(toString);
+        assertTrue(toString.contains("UserDTO"));
+        assertTrue(toString.contains("newuser"));
+
+        // no-args constructor
+        UserDTO empty = new UserDTO();
+        assertNotNull(empty);
+    }
 }

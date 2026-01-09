@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,7 +33,7 @@ public class PosterIntegrationTest {
                 .type("Type A")
                 .category("Category X")
                 .image("http://example.com/main.jpg")
-                .images(List.of("http://example.com/1.jpg", "http://example.com/2.jpg"))
+                .images(new ArrayList<>(List.of("http://example.com/1.jpg", "http://example.com/2.jpg"))) // mutable
                 .likes(0)
                 .saved(false)
                 .location("Sample Location")
@@ -76,5 +77,35 @@ public class PosterIntegrationTest {
     void testGetAllPosters_Empty() {
         List<PosterDTO> posters = posterService.getAllPosters();
         assertTrue(posters.isEmpty(), "Initially there should be no posters");
+    }
+
+    @Test
+    void testUpdatePoster_Success() {
+        PosterDTO created = posterService.createPoster(samplePoster);
+        // Use a mutable list to avoid UnsupportedOperationException
+        created.setImages(new ArrayList<>(created.getImages()));
+        created.setTitle("Updated Title");
+        PosterDTO updated = posterService.updatePoster(created.getId(), created);
+        assertNotNull(updated);
+        assertEquals("Updated Title", updated.getTitle());
+    }
+
+    @Test
+    void testUpdatePoster_NotFound() {
+        PosterDTO updated = posterService.updatePoster(999L, samplePoster);
+        assertNull(updated, "Updating non-existing poster should return null");
+    }
+
+    @Test
+    void testDeletePoster_Success() {
+        PosterDTO created = posterService.createPoster(samplePoster);
+        boolean deleted = posterService.deletePoster(created.getId());
+        assertTrue(deleted, "Delete should return true for existing poster");
+    }
+
+    @Test
+    void testDeletePoster_NotFound() {
+        boolean deleted = posterService.deletePoster(999L);
+        assertFalse(deleted, "Delete should return false for non-existing poster");
     }
 }
