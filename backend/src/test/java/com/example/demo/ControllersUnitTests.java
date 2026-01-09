@@ -1,9 +1,16 @@
 package com.example.demo;
 
+import com.example.demo.controller.AuthController;
+import com.example.demo.controller.CommentController;
 import com.example.demo.controller.ImageController;
 import com.example.demo.controller.PosterController;
+import com.example.demo.dto.CommentDTO;
+import com.example.demo.dto.CommentRequest;
 import com.example.demo.dto.PosterDTO;
+import com.example.demo.service.CommentService;
 import com.example.demo.service.PosterService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,8 +29,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -38,6 +47,11 @@ class ControllersUnitTests {
     @Mock
     private PosterService posterService;
 
+    @Mock
+    private CommentService commentService;
+
+    @InjectMocks
+    private CommentController commentController;
     @InjectMocks
     private PosterController posterController;
 
@@ -46,11 +60,11 @@ class ControllersUnitTests {
 
     @TempDir
     Path tempDir; 
-
+private final ObjectMapper objectMapper = new ObjectMapper();
     @BeforeEach
     void setUp() {
         // Build MockMvc to handle both controllers
-        mockMvc = MockMvcBuilders.standaloneSetup(posterController, imageController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(posterController, imageController,commentController).build();
         
         // Inject the same temp directory into both controllers
         ReflectionTestUtils.setField(posterController, "uploadDir", tempDir.toString());
@@ -184,5 +198,57 @@ class ControllersUnitTests {
 
         mockMvc.perform(post("/posters/1/like"))
                 .andExpect(status().isNoContent());
+    }
+    @Test
+    void addComment_Success() throws Exception {
+        Long posterId = 1L;
+        CommentRequest request = new CommentRequest("Great poster!");
+        CommentDTO mockResponse = CommentDTO.builder()
+                .id(10L)
+                .content("Great poster!")
+                .username("User1")
+                .build();
+
+        when(commentService.addComment(eq(posterId), anyString())).thenReturn(mockResponse);
+
+        mockMvc.perform(post("/api/comments/{posterId}", posterId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").value("Great poster!"))
+                .andExpect(jsonPath("$.username").value("User1"));
+    }
+
+    @Test
+    void addComment_Unauthorized_WhenServiceReturnsNull() throws Exception {
+        Long posterId = 1L;
+        CommentRequest request = new CommentRequest("This will fail");
+
+        // Controller returns 401 if service returns null
+        when(commentService.addComment(eq(posterId), anyString())).thenReturn(null);
+
+        mockMvc.perform(post("/api/comments/{posterId}", posterId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // -------------------- GET (FETCH COMMENTS) --------------------
+
+    @Test
+    void getComments_Success() throws Exception {
+        Long posterId = 1L;
+        List<CommentDTO> comments = Arrays.asList(
+                CommentDTO.builder().id(1L).content("Comment 1").build(),
+                CommentDTO.builder().id(2L).content("Comment 2").build()
+        );
+
+        when(commentService.getCommentsForPoster(posterId)).thenReturn(comments);
+
+        mockMvc.perform(get("/api/comments/{posterId}", posterId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].content").value("Comment 1"))
+                .andExpect(jsonPath("$[1].content").value("Comment 2"));
     }
 }
