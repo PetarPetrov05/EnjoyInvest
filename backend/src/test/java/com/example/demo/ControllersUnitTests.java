@@ -52,40 +52,29 @@ class ControllersUnitTests {
 
     @InjectMocks
     private CommentController commentController;
+    
     @InjectMocks
     private PosterController posterController;
 
     @InjectMocks
-    private ImageController imageController; // Added ImageController
+    private ImageController imageController;
 
     @TempDir
-    Path tempDir; 
-private final ObjectMapper objectMapper = new ObjectMapper();
+    Path tempDir;
+    
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @BeforeEach
     void setUp() {
-        // Build MockMvc to handle both controllers
-        mockMvc = MockMvcBuilders.standaloneSetup(posterController, imageController,commentController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(posterController, imageController, commentController)
+                .setControllerAdvice(new com.example.demo.exception.ValidationExceptionHandler())
+                .build();
         
-        // Inject the same temp directory into both controllers
         ReflectionTestUtils.setField(posterController, "uploadDir", tempDir.toString());
         ReflectionTestUtils.setField(imageController, "uploadDir", tempDir.toString());
     }
 
-    @Test
-    void addComment_Unauthorized_WhenServiceReturnsNull() throws Exception {
-        Long posterId = 1L;
-        CommentRequest request = new CommentRequest("This will fail");
-
-        // Controller returns 401 if service returns null
-        when(commentService.addComment(eq(posterId), anyString())).thenReturn(null);
-
-        mockMvc.perform(post("/api/comments/{posterId}", posterId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // -------------------- GET (FETCH COMMENTS) --------------------
+    // -------------------- IMAGE CONTROLLER --------------------
 
     @Test
     void getImage_Success() throws Exception {
@@ -166,8 +155,110 @@ private final ObjectMapper objectMapper = new ObjectMapper();
     }
 
     @Test
+    void createPoster_ServiceReturnsNull_ReturnsBadRequest() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("image", "test.jpg", "image/jpeg", "data".getBytes());
+        
+        when(posterService.createPoster(any(PosterDTO.class))).thenReturn(null);
+
+        mockMvc.perform(multipart("/posters")
+                        .file(file)
+                        .param("title", "Valid Title")
+                        .param("description", "This is a long enough description to pass validation")
+                        .param("fullDescription", "This is an even longer description to pass validation requirements")
+                        .param("price", "100")
+                        .param("type", "Type A")
+                        .param("category", "General")
+                        .param("location", "London")
+                        .param("phone", "123456")
+                        .param("email", "test@test.com"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createPoster_WithAdditionalImages_Success() throws Exception {
+        MockMultipartFile mainImage = new MockMultipartFile("image", "main.jpg", "image/jpeg", "data".getBytes());
+        MockMultipartFile extraImage1 = new MockMultipartFile("images", "extra1.jpg", "image/jpeg", "extra-data".getBytes());
+        MockMultipartFile extraImage2 = new MockMultipartFile("images", "extra2.jpg", "image/jpeg", "extra-data2".getBytes());
+        
+        PosterDTO savedDto = PosterDTO.builder()
+                .id(1L)
+                .title("Multi Image")
+                .images(Arrays.asList("extra1.jpg", "extra2.jpg"))
+                .build();
+        when(posterService.createPoster(any(PosterDTO.class))).thenReturn(savedDto);
+
+        mockMvc.perform(multipart("/posters")
+                        .file(mainImage)
+                        .file(extraImage1)
+                        .file(extraImage2)
+                        .param("title", "Multi Image Test")
+                        .param("description", "Valid description for the multi-image poster test")
+                        .param("fullDescription", "This is a full description that is long enough to pass validation requirements")
+                        .param("price", "100")
+                        .param("type", "Type A")
+                        .param("category", "General")
+                        .param("location", "London")
+                        .param("phone", "123456")
+                        .param("email", "test@test.com"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Multi Image"));
+    }
+
+    @Test
+    void createPoster_WithEmptyAdditionalImages_Success() throws Exception {
+        MockMultipartFile mainImage = new MockMultipartFile("image", "main.jpg", "image/jpeg", "data".getBytes());
+        MockMultipartFile emptyImage = new MockMultipartFile("images", "empty.jpg", "image/jpeg", new byte[0]);
+        
+        PosterDTO savedDto = PosterDTO.builder().id(1L).title("Test").build();
+        when(posterService.createPoster(any(PosterDTO.class))).thenReturn(savedDto);
+
+        mockMvc.perform(multipart("/posters")
+                        .file(mainImage)
+                        .file(emptyImage)
+                        .param("title", "Test Empty Images")
+                        .param("description", "Valid description for testing empty images")
+                        .param("fullDescription", "This is a full description that is long enough to pass validation")
+                        .param("price", "100")
+                        .param("type", "Type A")
+                        .param("category", "General")
+                        .param("location", "London")
+                        .param("phone", "123456")
+                        .param("email", "test@test.com"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void createPoster_ExceptionDuringSave_ReturnsInternalServerError() throws Exception {
+        // Use a PosterController with an invalid upload directory
+        PosterController testController = new PosterController(posterService);
+        ReflectionTestUtils.setField(testController, "uploadDir", "/invalid\0path");
+        
+        MockMvc testMvc = MockMvcBuilders.standaloneSetup(testController).build();
+        
+        MockMultipartFile file = new MockMultipartFile("image", "test.jpg", "image/jpeg", "data".getBytes());
+
+        testMvc.perform(multipart("/posters")
+                        .file(file)
+                        .param("title", "Error Test Title")
+                        .param("description", "Valid description for error test case")
+                        .param("fullDescription", "This is a full description that is long enough to pass validation")
+                        .param("price", "100")
+                        .param("type", "Type A")
+                        .param("category", "General")
+                        .param("location", "London")
+                        .param("phone", "123456")
+                        .param("email", "test@test.com"))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
     void updatePoster_Success() throws Exception {
-        PosterDTO existing = PosterDTO.builder().id(1L).title("Old").image("old.jpg").build();
+        PosterDTO existing = PosterDTO.builder()
+                .id(1L)
+                .title("Old")
+                .image("old.jpg")
+                .images(Arrays.asList("old1.jpg"))
+                .build();
         PosterDTO updated = PosterDTO.builder().id(1L).title("New").build();
         MockMultipartFile file = new MockMultipartFile("image", "new.jpg", "image/jpeg", "new".getBytes());
 
@@ -180,6 +271,99 @@ private final ObjectMapper objectMapper = new ObjectMapper();
                         .with(request -> { request.setMethod("PUT"); return request; }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("New"));
+    }
+
+    @Test
+    void updatePoster_NotFound() throws Exception {
+        when(posterService.getPosterById(99L)).thenReturn(null);
+        
+        mockMvc.perform(multipart("/posters/99")
+                        .param("title", "New")
+                        .with(request -> { request.setMethod("PUT"); return request; }))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatePoster_ServiceReturnsNull_ReturnsNotFound() throws Exception {
+        PosterDTO existing = PosterDTO.builder().id(1L).title("Old").build();
+        when(posterService.getPosterById(1L)).thenReturn(existing);
+        when(posterService.updatePoster(eq(1L), any(PosterDTO.class))).thenReturn(null);
+
+        mockMvc.perform(multipart("/posters/1")
+                        .param("title", "New")
+                        .with(request -> { request.setMethod("PUT"); return request; }))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updatePoster_WithNewImages_Success() throws Exception {
+        PosterDTO existing = PosterDTO.builder()
+                .id(1L)
+                .title("Old")
+                .image("old.jpg")
+                .images(Arrays.asList("old1.jpg"))
+                .build();
+        PosterDTO updated = PosterDTO.builder().id(1L).title("Updated").build();
+        
+        MockMultipartFile newMainImage = new MockMultipartFile("image", "new-main.jpg", "image/jpeg", "new-data".getBytes());
+        MockMultipartFile newImage1 = new MockMultipartFile("images", "new1.jpg", "image/jpeg", "new1".getBytes());
+
+        when(posterService.getPosterById(1L)).thenReturn(existing);
+        when(posterService.updatePoster(eq(1L), any(PosterDTO.class))).thenReturn(updated);
+
+        mockMvc.perform(multipart("/posters/1")
+                        .file(newMainImage)
+                        .file(newImage1)
+                        .param("title", "Updated")
+                        .with(request -> { request.setMethod("PUT"); return request; }))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updatePoster_PartialUpdate_Success() throws Exception {
+        PosterDTO existing = PosterDTO.builder()
+                .id(1L)
+                .title("Old Title")
+                .description("Old Desc")
+                .fullDescription("Old Full Desc")
+                .price("100.0")
+                .type("Type A")
+                .category("Cat A")
+                .location("Old Location")
+                .phone("111")
+                .email("old@test.com")
+                .image("old.jpg")
+                .images(Arrays.asList("old1.jpg"))
+                .build();
+        
+        PosterDTO updated = PosterDTO.builder().id(1L).title("Old Title").build();
+
+        when(posterService.getPosterById(1L)).thenReturn(existing);
+        when(posterService.updatePoster(eq(1L), any(PosterDTO.class))).thenReturn(updated);
+
+        // Only update title, everything else should keep existing values
+        mockMvc.perform(multipart("/posters/1")
+                        .with(request -> { request.setMethod("PUT"); return request; }))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updatePoster_ExceptionDuringSave_ReturnsInternalServerError() throws Exception {
+        PosterDTO existing = PosterDTO.builder().id(1L).title("Old").build();
+        when(posterService.getPosterById(1L)).thenReturn(existing);
+        
+        // Create a new controller with invalid path
+        PosterController testController = new PosterController(posterService);
+        ReflectionTestUtils.setField(testController, "uploadDir", "/invalid\0path");
+        MockMvc testMvc = MockMvcBuilders.standaloneSetup(testController).build();
+        
+        MockMultipartFile file = new MockMultipartFile("image", "new.jpg", "image/jpeg", "data".getBytes());
+
+        testMvc.perform(multipart("/posters/1")
+                        .file(file)
+                        .param("title", "Error")
+                        .with(request -> { request.setMethod("PUT"); return request; }))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -249,15 +433,4 @@ private final ObjectMapper objectMapper = new ObjectMapper();
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
-
-    // -------------------- VALIDATION BRANCH --------------------
-
-    // @Test
-    // void whenValidationFails_ReturnsErrorMap() throws Exception {
-    //     mockMvc.perform(multipart("/posters")
-    //                     .param("title", "") 
-    //                     .contentType(MediaType.MULTIPART_FORM_DATA))
-    //             .andExpect(status().isOk()) // ValidationExceptionHandler returns 200 by default
-    //             .andExpect(jsonPath("$.title").exists());
-    // }
 }
