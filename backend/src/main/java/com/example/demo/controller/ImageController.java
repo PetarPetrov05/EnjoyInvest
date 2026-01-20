@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+ 
 @RestController
 @RequestMapping("/images")
 public class ImageController {
