@@ -5,13 +5,7 @@ WORKDIR /app
 COPY gradlew ./
 COPY gradle ./gradle
 COPY build.gradle settings.gradle ./
-RUN ./gradlew --version
-
-COPY src ./src
-RUN ./gradlew clean build -x test
-
-
-# 2) Run stage
+RUN chmod +x gradlew
 FROM eclipse-temurin:21-jre AS runner
 WORKDIR /app
 
