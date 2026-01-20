@@ -6,7 +6,6 @@ COPY gradlew ./
 COPY gradle ./gradle
 COPY build.gradle settings.gradle gradle.properties ./
 COPY src ./src
-COPY db ./db
 RUN chmod +x gradlew
 RUN ./gradlew build --no-daemon -x test
 FROM eclipse-temurin:21-jre AS runner
