@@ -128,6 +128,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="title">Offer Title *</Label>
                   <Input
                     id="title"
+                    data-cy="title-input"
                     placeholder="e.g., Premium Investment Portfolio"
                     value={formData.title}
                     onChange={(e) => handleInputChange("title", e.target.value)}
@@ -138,7 +139,7 @@ export default function NewOfferPage() {
                 <div className="space-y-2">
                   <Label htmlFor="type">Offer Type *</Label>
                   <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="type" data-cy="type-select">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -153,6 +154,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="category">Category *</Label>
                   <Input
                     id="category"
+                    data-cy="category-input"
                     placeholder="e.g., Real Estate, Stocks, Bonds"
                     value={formData.category}
                     onChange={(e) => handleInputChange("category", e.target.value)}
@@ -164,6 +166,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="price">Price *</Label>
                   <Input
                     id="price"
+                    data-cy="price-input"
                     placeholder="e.g., $50,000 or $150/month"
                     value={formData.price}
                     onChange={(e) => handleInputChange("price", e.target.value)}
@@ -175,6 +178,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="location">Location *</Label>
                   <Input
                     id="location"
+                    data-cy="location-input"
                     placeholder="e.g., Downtown Office, Online"
                     value={formData.location}
                     onChange={(e) => handleInputChange("location", e.target.value)}
@@ -186,6 +190,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="description">Short Description *</Label>
                   <Textarea
                     id="description"
+                    data-cy="description-textarea"
                     placeholder="Brief description (1-2 sentences)"
                     value={formData.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
@@ -198,6 +203,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="fullDescription">Full Description *</Label>
                   <Textarea
                     id="fullDescription"
+                    data-cy="full-description-textarea"
                     placeholder="Detailed description of the offer"
                     value={formData.fullDescription}
                     onChange={(e) => handleInputChange("fullDescription", e.target.value)}
@@ -221,6 +227,7 @@ export default function NewOfferPage() {
                 <div className="flex gap-2">
                   <Input
                     id="mainImage"
+                    data-cy="main-image-input"
                     type="file"
                     accept="image/*"
                     onChange={(e) => setFormData(prev => ({...prev, mainImage: e.target.files ? e.target.files[0] : null}))}
@@ -241,7 +248,7 @@ export default function NewOfferPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Additional Images</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={addAdditionalImage}>
+                  <Button type="button" variant="outline" size="sm" onClick={addAdditionalImage} data-cy="add-image-button">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Image
                   </Button>
@@ -252,6 +259,7 @@ export default function NewOfferPage() {
                       <Input
                         type="file"
                         accept="image/*"
+                        data-cy="additional-image-input"
                         onChange={(e) => updateAdditionalImage(index, e.target.files ? e.target.files[0] : null)}
                       />
                       <Button type="button" variant="outline" size="icon" onClick={() => removeAdditionalImage(index)}>
@@ -318,6 +326,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="contactPhone">Contact Phone *</Label>
                   <Input
                     id="contactPhone"
+                    data-cy="contact-phone-input"
                     type="tel"
                     placeholder="+1 (555) 123-4567"
                     value={formData.contactPhone}
@@ -329,6 +338,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="contactEmail">Contact Email *</Label>
                   <Input
                     id="contactEmail"
+                    data-cy="contact-email-input"
                     type="email"
                     placeholder="contact@enjoyinvest.com"
                     value={formData.contactEmail}
@@ -342,10 +352,10 @@ export default function NewOfferPage() {
 
           {/* Actions */}
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" asChild>
+            <Button type="button" variant="outline" asChild data-cy="cancel-button">
               <Link href="/admin/offers">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} data-cy="create-offer-button">
               {isSubmitting ? "Creating..." : "Create Offer"}
             </Button>
           </div>

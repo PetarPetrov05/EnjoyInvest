@@ -70,10 +70,11 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
+                data-cy="search-input"
               />
             </div>
 
-            <Select value={filterType} onValueChange={setFilterType}>
+            <Select value={filterType} onValueChange={setFilterType} data-cy="type-filter">
               <SelectTrigger className="w-full md:w-48">
                 <SelectValue placeholder={t('offers.filterByType')} />
               </SelectTrigger>
@@ -85,7 +86,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
               </SelectContent>
             </Select>
 
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <Select value={filterCategory} onValueChange={setFilterCategory} data-cy="category-filter">
               <SelectTrigger className="w-full md:w-48">
                 <SelectValue placeholder={t('offers.filterByCategory')} />
               </SelectTrigger>
@@ -127,7 +128,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
                 </p>
               </div>
 
-              <div id="offers" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div id="offers" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-cy="offers-grid">
                 {filteredOffers.map((offer) => (
                   <OfferCard key={offer.id} offer={offer} onLike={handleLike} onSave={handleSave} />
                 ))}

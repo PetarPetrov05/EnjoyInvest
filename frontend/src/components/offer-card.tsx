@@ -32,7 +32,7 @@ export function OfferCard({ offer, onLike, onSave }: OfferCardProps) {
   }
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow" data-cy={`offer-card-${offer.id}`}>
       <div className="relative">
         <img src={offer.image ? `${BACKEND_URL}/images/${offer.image}` : "/placeholder.svg"} alt={offer.title} className="w-full h-48 object-cover" />
         <Badge
@@ -67,13 +67,13 @@ export function OfferCard({ offer, onLike, onSave }: OfferCardProps) {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button size="sm" variant="ghost" onClick={handleLike} className={isLiked ? "text-red-500" : ""}>
+            <Button size="sm" variant="ghost" onClick={handleLike} className={isLiked ? "text-red-500" : ""} data-cy="like-button">
               <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleSave} className={isSaved ? "text-primary" : ""}>
+            <Button size="sm" variant="ghost" onClick={handleSave} className={isSaved ? "text-primary" : ""} data-cy="save-button">
               <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
             </Button>
-            <Button size="sm" asChild>
+            <Button size="sm" asChild data-cy="view-details-button">
               <Link href={`/offers/${offer.id}`}>View Details</Link>
             </Button>
           </div>

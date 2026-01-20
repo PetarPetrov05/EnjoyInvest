@@ -52,6 +52,14 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'com.h2database:h2'
+
+    // Spring Security Test
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // Testcontainers
+    testImplementation 'org.testcontainers:testcontainers:1.19.8'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.8'
+    testImplementation 'org.testcontainers:postgresql:1.19.8'
 }
 
 // Flyway configuration
@@ -71,7 +79,6 @@ jacoco {
 // Ensure tests use JUnit 5 and generate Jacoco report
 tasks.named("test") {
     useJUnitPlatform()
-    systemProperty 'spring.profiles.active', 'test'
     finalizedBy tasks.jacocoTestReport
 }
 

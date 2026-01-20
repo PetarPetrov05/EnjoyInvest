@@ -42,6 +42,8 @@ public class AuthService {
     private JwtUtil jwtUtil;
 
     public AuthResult login(String email, String password) {
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) return null;
+
         var userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
             logger.warn(LogMessages.LOGIN_FAILED, email);
@@ -66,6 +68,9 @@ public class AuthService {
     }
 
     public AuthResult register(String email, String password, String name, String username) {
+        if (email == null || email.isEmpty() || password == null || password.isEmpty() || name == null || name.isEmpty() || username == null || username.isEmpty()) return null;
+        if (!email.contains("@")) return null;
+
         if (userRepository.findByEmail(email).isPresent()) {
             logger.warn(LogMessages.REGISTER_FAILED, email);
             return null;

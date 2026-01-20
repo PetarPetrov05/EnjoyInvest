@@ -82,7 +82,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
             <h1 className="text-3xl font-bold">Offers Management</h1>
             <p className="text-muted-foreground">Manage all truck rentals, sales, and trip offers.</p>
           </div>
-          <Button asChild>
+          <Button asChild data-cy="add-new-offer-button">
             <Link href="/admin/offers/new">
               <Plus className="mr-2 h-4 w-4" />
               Add New Offer

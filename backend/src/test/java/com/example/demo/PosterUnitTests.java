@@ -69,7 +69,13 @@ public class PosterUnitTests {
 
     @Test
     void getAllPosters_ReturnsMappedDtos() {
-        RepoPoster repo = RepoPoster.builder().id(1L).build();
+        RepoPoster repo = RepoPoster.builder()
+                .id(1L)
+                .title("Test Title")
+                .description("Desc")
+                .price("100")
+                .images(Collections.emptyList())
+                .build();
 
         when(posterRepository.findAll()).thenReturn(List.of(repo));
         when(likeRepository.countByPoster(repo)).thenReturn(5L);
@@ -78,7 +84,14 @@ public class PosterUnitTests {
         List<PosterDTO> result = posterService.getAllPosters();
 
         assertEquals(1, result.size());
-        assertEquals(5, result.get(0).getLikes());
+        PosterDTO dto = result.get(0);
+        assertEquals(1L, dto.getId());
+        assertEquals("Test Title", dto.getTitle());
+        assertEquals("Desc", dto.getDescription());
+        assertEquals("100", dto.getPrice());
+        assertEquals(5, dto.getLikes());
+        assertNotNull(dto.getImages());
+        assertTrue(dto.getImages().isEmpty());
     }
 
     // ---------------- getPosterById ----------------
@@ -109,6 +122,8 @@ public class PosterUnitTests {
     void createPoster_SetsDefaultsAndSaves() {
         PosterDTO input = PosterDTO.builder()
                 .title("Title")
+                .description("Description")
+                .email("test@example.com")
                 .build();
 
         RepoPoster saved = RepoPoster.builder().id(1L).build();
@@ -123,6 +138,18 @@ public class PosterUnitTests {
     @Test
     void createPoster_NullInput_ReturnsNull() {
         assertNull(posterService.createPoster(null));
+    }
+
+    @Test
+    void createPoster_EmptyTitle_ReturnsNull() {
+        PosterDTO input = PosterDTO.builder().title("").build();
+        assertNull(posterService.createPoster(input));
+    }
+
+    @Test
+    void createPoster_InvalidEmail_ReturnsNull() {
+        PosterDTO input = PosterDTO.builder().title("Title").email("invalid").build();
+        assertNull(posterService.createPoster(input));
     }
 
     // ---------------- updatePoster ----------------

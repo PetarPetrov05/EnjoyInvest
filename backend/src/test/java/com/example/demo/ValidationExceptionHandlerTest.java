@@ -44,7 +44,7 @@ class ValidationExceptionHandlerTest {
                         .param("title", "abc") 
                         .param("description", "too short")
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk()) // Your handler returns Map without setting status, so it defaults to 200
+                .andExpect(status().isBadRequest()) // Handler now returns 400 for validation errors
                 .andExpect(jsonPath("$.title").value("Title must be at least 4 characters"))
                 .andExpect(jsonPath("$.description").value("Description must be at least 10 characters"));
     }

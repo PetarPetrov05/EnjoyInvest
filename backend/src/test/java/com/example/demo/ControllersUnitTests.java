@@ -25,6 +25,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,8 +67,12 @@ class ControllersUnitTests {
 
     @BeforeEach
     void setUp() {
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
+        
         mockMvc = MockMvcBuilders.standaloneSetup(posterController, imageController, commentController)
                 .setControllerAdvice(new com.example.demo.exception.ValidationExceptionHandler())
+                .setValidator(validator)
                 .build();
         
         ReflectionTestUtils.setField(posterController, "uploadDir", tempDir.toString());
@@ -152,6 +157,24 @@ class ControllersUnitTests {
                         .param("email", "test@test.com"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Valid Title"));
+    }
+
+    @Test
+    void createPoster_InvalidTitle_ReturnsBadRequest() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("image", "test.jpg", "image/jpeg", "data".getBytes());
+
+        mockMvc.perform(multipart("/posters")
+                        .file(file)
+                        .param("title", "Hi") // Too short
+                        .param("description", "A long enough description")
+                        .param("fullDescription", "An even longer description")
+                        .param("price", "100")
+                        .param("type", "Type A")
+                        .param("category", "Cat A")
+                        .param("location", "London")
+                        .param("phone", "123456")
+                        .param("email", "test@test.com"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

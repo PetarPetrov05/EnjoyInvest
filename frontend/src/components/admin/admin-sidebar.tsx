@@ -56,7 +56,7 @@ export function AdminSidebar() {
         {sidebarItems.map((item) => {
           const isActive = pathname === item.href
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} data-cy={`sidebar-${item.title.toLowerCase().replace(' ', '-')}-link`}>
               <Button
                 variant={isActive ? "default" : "ghost"}
                 className={cn(

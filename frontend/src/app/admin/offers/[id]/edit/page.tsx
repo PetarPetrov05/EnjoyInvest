@@ -185,13 +185,13 @@ export default function EditOfferPage({ params }: EditOfferPageProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="title">Offer Title *</Label>
-                  <Input id="title" value={formData.title} onChange={(e) => handleInputChange("title", e.target.value)} required />
+                  <Input id="title" value={formData.title} onChange={(e) => handleInputChange("title", e.target.value)} required data-cy="title-input" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="type">Offer Type *</Label>
                   <Select value={formData.type} onValueChange={(val) => handleInputChange("type", val)}>
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="type" data-cy="type-select">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -330,7 +330,7 @@ export default function EditOfferPage({ params }: EditOfferPageProps) {
             <Button type="button" variant="outline" asChild>
               <Link href="/admin/offers">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} data-cy="save-changes-button">
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </div>

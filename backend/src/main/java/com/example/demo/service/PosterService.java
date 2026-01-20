@@ -67,7 +67,11 @@ public class PosterService {
     }
 
     public PosterDTO createPoster(PosterDTO posterDTO) {
-        if (posterDTO == null || posterDTO.getTitle() == null) return null;
+        if (posterDTO == null || posterDTO.getTitle() == null || posterDTO.getTitle().isEmpty()) return null;
+
+        if (posterDTO.getDescription() == null) return null;
+
+        if (posterDTO.getEmail() == null || posterDTO.getEmail().isEmpty() || !posterDTO.getEmail().contains("@")) return null;
 
         if (posterDTO.getLikes() == null) posterDTO.setLikes(0);
         if (posterDTO.getSaved() == null) posterDTO.setSaved(false);

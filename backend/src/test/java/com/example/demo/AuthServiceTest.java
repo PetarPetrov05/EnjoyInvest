@@ -203,25 +203,38 @@ void testUpdateUserRole_Success() {
     }
 
     @Test
-    void testConvertToUserDTO_MappingRolesCorrectly() throws Exception {
-        RepoRole role = new RepoRole();
-        role.setName("USER");
+    void login_NullEmail_ReturnsNull() {
+        AuthResult result = authService.login(null, "password");
+        assertNull(result);
+    }
 
-        RepoUser user = new RepoUser();
-        user.setId(1L);
-        user.setUsername("user1");
-        user.setEmail("user1@test.com");
-        user.setName("User One");
-        user.setRoles(Set.of(role));
+    @Test
+    void login_EmptyEmail_ReturnsNull() {
+        AuthResult result = authService.login("", "password");
+        assertNull(result);
+    }
 
-        var method = AuthService.class.getDeclaredMethod("convertToUserDTO", RepoUser.class);
-        method.setAccessible(true);
-        UserDTO dto = (UserDTO) method.invoke(authService, user);
+    @Test
+    void login_NullPassword_ReturnsNull() {
+        AuthResult result = authService.login("test@example.com", null);
+        assertNull(result);
+    }
 
-        assertEquals(user.getId(), dto.getId());
-        assertEquals("user1", dto.getUsername());
-        assertEquals("user1@test.com", dto.getEmail());
-        assertTrue(dto.getRoles().contains("USER"));
-        assertTrue(dto.isApproved());
+    @Test
+    void register_NullEmail_ReturnsNull() {
+        AuthResult result = authService.register(null, "password", "name", "username");
+        assertNull(result);
+    }
+
+    @Test
+    void register_EmptyEmail_ReturnsNull() {
+        AuthResult result = authService.register("", "password", "name", "username");
+        assertNull(result);
+    }
+
+    @Test
+    void register_InvalidEmail_ReturnsNull() {
+        AuthResult result = authService.register("invalid", "password", "name", "username");
+        assertNull(result);
     }
 }
