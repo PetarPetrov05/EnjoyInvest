@@ -44,7 +44,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error }
+          {error && <p className="text-red-500 text-sm" data-cy="error-message">{error}</p>}
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -57,6 +57,7 @@ export function LoginForm() {
               placeholder="your.email@example.com"
               required
               disabled={isLoading}
+              data-cy="email-input"
             />
           </div>
 
@@ -71,10 +72,11 @@ export function LoginForm() {
               placeholder="Enter your password"
               required
               disabled={isLoading}
+              data-cy="password-input"
             />
           </div>
 
-          <Button id="btn1" type="submit" className="w-full" disabled={isLoading}>
+          <Button id="btn1" type="submit" className="w-full" disabled={isLoading} data-cy="login-button">
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

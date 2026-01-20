@@ -15,8 +15,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Heart, MessageCircle, Bookmark, Phone, Mail, MapPin, Calendar, Share2, ArrowLeft } from "lucide-react";
 
-import { getOfferById } from "@/lib/data/offers";
-import type { Offer } from "@/lib/data/offers";
+import { postComment, getComments } from "@/lib/data/offers";
+import { getOfferById, toggleLikeOffer } from "@/lib/data/offers";
+import { BACKEND_URL } from "@/lib/data/offers";
+import type { Offer, Comment } from "@/lib/data/offers";
 
 export default function OfferDetailPage() {
   const params = useParams();
@@ -27,37 +29,69 @@ export default function OfferDetailPage() {
   const [isSaved, setIsSaved] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
   const [showContactForm, setShowContactForm] = useState(false);
 
   useEffect(() => {
     async function fetchOffer() {
       if (!id) return;
+
       const data = await getOfferById(Number(id));
       if (!data) return; // optionally handle not found
       setOffer(data);
       setIsSaved(data.saved);
+      setIsLiked(data.isLiked || false);
       setLikeCount(data.likes);
+
+      // Fetch comments
+      const fetchedComments = await getComments(Number(id));
+      setComments(fetchedComments);
     }
     fetchOffer();
   }, [id]);
 
   if (!offer) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(prev => (isLiked ? prev - 1 : prev + 1));
+  const handleLike = async () => {
+    if (!id) return;
+    try {
+      const liked = await toggleLikeOffer(Number(id));
+      setIsLiked(liked);
+      setLikeCount(prev => liked ? prev + 1 : prev - 1);
+
+      // Optionally refetch the offer to get updated data
+      const updatedOffer = await getOfferById(Number(id));
+      if (updatedOffer) {
+        setOffer(updatedOffer);
+        setIsLiked(updatedOffer.isLiked || false);
+        setLikeCount(updatedOffer.likes);
+      }
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
+    }
   };
 
   const handleSave = () => setIsSaved(!isSaved);
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      console.log("New comment:", newComment);
-      alert("Comment submitted! (This would be saved in a real application)");
-      setNewComment("");
-    }
-  };
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!newComment.trim() || !id) return;
+
+  try {
+    const savedComment = await postComment(Number(id), newComment);
+
+    const normalizedComment = {
+      ...savedComment,
+      username: savedComment.username ?? "Anonymous"
+    };
+
+    setComments(prev => [...prev, normalizedComment]);
+    setNewComment("");
+  } catch (error) {
+    console.error("Failed to post comment:", error);
+    alert("You must be logged in to comment");
+  }
+};
 
   const handleContactSubmit = () => setShowContactForm(true);
 
@@ -84,7 +118,7 @@ export default function OfferDetailPage() {
               <CardContent className="p-0">
                 <div className="relative">
                   <img
-                    src={offer.image || "/placeholder.svg"}
+                    src={offer.image ? `${BACKEND_URL}/images/${offer.image}` : "/placeholder.svg"}
                     alt={offer.title}
                     className="w-full h-96 object-cover rounded-t-lg"
                   />
@@ -109,7 +143,7 @@ export default function OfferDetailPage() {
                       {offer.images.slice(1).map((image, index) => (
                         <img
                           key={index}
-                          src={image || "/placeholder.svg"}
+                          src={image ? `${BACKEND_URL}/images/${image}` : "/placeholder.svg"}
                           alt={`${offer.title} ${index + 2}`}
                           className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
                         />
@@ -156,7 +190,7 @@ export default function OfferDetailPage() {
                     </Button>
                     <Button variant="ghost" size="sm">
                       <MessageCircle className="h-4 w-4 mr-2" />
-                      {/* {offer.comments.length} */}
+                      {comments.length}
                     </Button>
                     <Button
                       variant="ghost"
@@ -201,19 +235,19 @@ export default function OfferDetailPage() {
                 <CardTitle>Comments</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* {offer.comments.map(comment => (
+                {comments.map(comment => (
                   <div key={comment.id} className="flex space-x-4">
                     <Avatar>
                       <AvatarFallback>
-                        {comment.author
-                          .split(" ")
+                        {comment.username
+                          ?.split(" ")
                           .map(n => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center space-x-2">
-                        <span className="font-semibold">{comment.author}</span>
+                        <span className="font-semibold">{comment.username}</span>
                         <span className="text-sm text-muted-foreground">
                           {new Date(comment.createdAt).toLocaleDateString()}
                         </span>
@@ -221,7 +255,7 @@ export default function OfferDetailPage() {
                       <p className="text-muted-foreground">{comment.content}</p>
                     </div>
                   </div>
-                ))} */}
+                ))}
 
                 <Separator />
 

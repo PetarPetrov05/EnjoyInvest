@@ -6,10 +6,13 @@ import { TrendingUp, Menu, X } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { UserMenu } from "@/components/auth/user-menu"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { useTranslation } from 'react-i18next'
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isAuthenticated, isLoading } = useAuth()
+  const { t } = useTranslation()
 
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50">
@@ -24,16 +27,16 @@ export function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-foreground hover:text-primary transition-colors">
-              Home
+              {t('nav.home')}
             </Link>
             <Link href="/offers" className="text-foreground hover:text-primary transition-colors">
-              Opportunities
+              {t('nav.offers')}
             </Link>
             <Link href="/company" className="text-foreground hover:text-primary transition-colors">
-              Company Info
+              {t('nav.about')}
             </Link>
             <Link href="/contact" className="text-foreground hover:text-primary transition-colors">
-              Contact
+              {t('nav.contact')}
             </Link>
 
             {!isLoading && isAuthenticated && (
@@ -42,12 +45,14 @@ export function Navigation() {
               </Link>
             )}
 
+            <LanguageSwitcher />
+
             {!isLoading && (
               isAuthenticated ? (
                 <UserMenu />
               ) : (
                 <Button asChild>
-                  <Link href="/login">Login</Link>
+                  <Link href="/login">{t('nav.login')}</Link>
                 </Button>
               )
             )}
@@ -75,28 +80,28 @@ export function Navigation() {
                 className="text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                {t('nav.home')}
               </Link>
               <Link
                 href="/offers"
                 className="text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Opportunities
+                {t('nav.offers')}
               </Link>
               <Link
                 href="/company"
                 className="text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Company Info
+                {t('nav.about')}
               </Link>
               <Link
                 href="/contact"
                 className="text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Contact
+                {t('nav.contact')}
               </Link>
 
               {!isLoading && isAuthenticated && (
@@ -109,10 +114,12 @@ export function Navigation() {
                 </Link>
               )}
 
+              <LanguageSwitcher />
+
               {!isLoading && !isAuthenticated && (
                 <Button asChild className="w-fit">
                   <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                    Login
+                    {t('nav.login')}
                   </Link>
                 </Button>
               )}

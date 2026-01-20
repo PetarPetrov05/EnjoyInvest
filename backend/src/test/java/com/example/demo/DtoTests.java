@@ -1,29 +1,37 @@
 package com.example.demo;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.time.LocalDateTime;
-
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import com.example.demo.model.Role;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.demo.dto.CreatePosterRequest;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
 import com.example.demo.dto.PosterDTO;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.UpdatePosterRequest;
+import com.example.demo.dto.UserDTO;
+import com.example.demo.dto.CommentDTO;
+import com.example.demo.dto.CommentRequest;
+import com.example.demo.model.Poster;
+import com.example.demo.model.Role;
 
 public class DtoTests {
+
     @Test
     void testPosterDTO_GettersAndSetters() {
         // Arrange
         Long id = 1L;
         String title = "Sample Poster";
-        String description = "Short description";
-        String fullDescription = "Full description";
+        String description = "Short descriptionFull descriptionShort descriptionFull description";
+        String fullDescription = "Full descriptionFull descriptionFull descriptionFull descriptionFull descriptionFull description";
         String price = "$100";
         String type = "For Sale";
         String category = "Electronics";
@@ -38,10 +46,26 @@ public class DtoTests {
         LocalDateTime updatedAt = LocalDateTime.now();
 
         // Act
-        PosterDTO poster = new PosterDTO(
-                id, title, description, fullDescription, price, type, category,
-                image, images, likes, saved, location, phone, email, createdAt, updatedAt
-        );
+        PosterDTO poster = PosterDTO.builder()
+                .id(id)
+                .title(title)
+                .description(description)
+                .fullDescription(fullDescription)
+                .price(price)
+                .type(type)
+                .category(category)
+                .image(image)
+                .images(images)
+                .likes(likes)
+                .saved(saved)
+                .isLiked(null)
+                .location(location)
+                .phone(phone)
+                .email(email)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .comments(null)
+                .build();
 
         // Assert - Getters
         assertEquals(id, poster.getId());
@@ -100,6 +124,7 @@ public class DtoTests {
         assertEquals(newCreatedAt, poster.getCreatedAt());
         assertEquals(newUpdatedAt, poster.getUpdatedAt());
     }
+
     @Test
     void testLoginRequest_GettersAndSetters() {
         LoginRequest loginRequest = new LoginRequest();
@@ -135,5 +160,445 @@ public class DtoTests {
         assertEquals(roles, response.getRoles());
         assertTrue(response.getRoles().contains(Role.USER));
         assertTrue(response.getRoles().contains(Role.ADMIN));
+    }
+    @Test
+void testPosterDTO_EqualsHashCodeToStringAndExtraFields() {
+    // Arrange
+    LocalDateTime now = LocalDateTime.now();
+
+    PosterDTO poster1 = PosterDTO.builder()
+            .id(1L)
+            .title("Poster")
+            .description("Desc")
+            .fullDescription("Full Desc")
+            .price("$10")
+            .type("Sale")
+            .category("Tech")
+            .image("img.jpg")
+            .images(List.of("1.jpg"))
+            .likes(5)
+            .saved(true)
+            .isLiked(true)
+            .location("NY")
+            .phone("123")
+            .email("a@test.com")
+            .createdAt(now)
+            .updatedAt(now)
+            .comments(List.of(new CommentDTO()))
+            .build();
+
+    PosterDTO poster2 = PosterDTO.builder()
+            .id(1L)
+            .title("Poster")
+            .description("Desc")
+            .fullDescription("Full Desc")
+            .price("$10")
+            .type("Sale")
+            .category("Tech")
+            .image("img.jpg")
+            .images(List.of("1.jpg"))
+            .likes(5)
+            .saved(true)
+            .isLiked(true)
+            .location("NY")
+            .phone("123")
+            .email("a@test.com")
+            .createdAt(now)
+            .updatedAt(now)
+            .comments(List.of(new CommentDTO()))
+            .build();
+
+    // equals & hashCode (covers canEqual internally)
+    assertEquals(poster1, poster2);
+    assertEquals(poster1.hashCode(), poster2.hashCode());
+
+    // equals edge cases
+    assertNotEquals(poster1, null);
+    assertNotEquals(poster1, new Object());
+
+    PosterDTO differentPoster = PosterDTO.builder().id(2L).build();
+    assertNotEquals(poster1, differentPoster);
+
+    // toString
+    String toStringResult = poster1.toString();
+    assertNotNull(toStringResult);
+    assertTrue(toStringResult.contains("PosterDTO"));
+    assertTrue(toStringResult.contains("Poster"));
+
+    // isLiked getter/setter
+    poster1.setIsLiked(false);
+    assertFalse(poster1.getIsLiked());
+
+    // comments getter/setter
+    List<CommentDTO> comments = List.of(new CommentDTO(), new CommentDTO());
+    poster1.setComments(comments);
+    assertEquals(comments, poster1.getComments());
+}
+@Test
+void testPosterDTO_NoArgsConstructor() {
+    PosterDTO poster = new PosterDTO();
+    assertNotNull(poster);
+}
+@Test
+void testCommentDTO_AllMethods() {
+    LocalDateTime now = LocalDateTime.now();
+
+    CommentDTO comment1 = CommentDTO.builder()
+            .id(1L)
+            .posterId(10L)
+            .userId(20L)
+            .username("john")
+            .content("Nice poster!")
+            .createdAt(now)
+            .build();
+
+    CommentDTO comment2 = CommentDTO.builder()
+            .id(1L)
+            .posterId(10L)
+            .userId(20L)
+            .username("john")
+            .content("Nice poster!")
+            .createdAt(now)
+            .build();
+
+    // getters
+    assertEquals(1L, comment1.getId());
+    assertEquals(10L, comment1.getPosterId());
+    assertEquals(20L, comment1.getUserId());
+    assertEquals("john", comment1.getUsername());
+    assertEquals("Nice poster!", comment1.getContent());
+    assertEquals(now, comment1.getCreatedAt());
+
+    // setters
+    comment1.setContent("Updated content");
+    assertEquals("Updated content", comment1.getContent());
+
+    // equals & hashCode (covers canEqual internally)
+    assertEquals(comment2, comment2); // self check
+    assertEquals(comment2, comment2);
+    assertEquals(comment2.hashCode(), comment2.hashCode());
+
+    assertEquals(comment2, CommentDTO.builder()
+            .id(1L)
+            .posterId(10L)
+            .userId(20L)
+            .username("john")
+            .content("Nice poster!")
+            .createdAt(now)
+            .build());
+
+    assertNotEquals(comment1, null);
+    assertNotEquals(comment1, new Object());
+
+    CommentDTO different = CommentDTO.builder().id(2L).build();
+    assertNotEquals(comment1, different);
+
+    // toString (ONLY check it runs)
+    assertNotNull(comment1.toString());
+}
+@Test
+void testCommentRequest_GettersSettersEqualsAndToString() {
+    CommentRequest request1 = new CommentRequest();
+    request1.setContent("Hello");
+
+    CommentRequest request2 = new CommentRequest();
+    request2.setContent("Hello");
+
+    // getter / setter
+    assertEquals("Hello", request1.getContent());
+
+    // equals & hashCode
+    assertEquals(request1, request2);
+    assertEquals(request1.hashCode(), request2.hashCode());
+
+    // equals edge cases
+    assertNotEquals(request1, null);
+    assertNotEquals(request1, new Object());
+
+    CommentRequest different = new CommentRequest();
+    different.setContent("Different");
+    assertNotEquals(request1, different);
+
+    // toString
+    String toStringResult = request1.toString();
+    assertNotNull(toStringResult);
+    assertTrue(toStringResult.contains("CommentRequest"));
+    assertTrue(toStringResult.contains("Hello"));
+}
+@Test
+void testPosterModel_AllLombokMethods() {
+    LocalDateTime now = LocalDateTime.now();
+
+    Poster poster1 = Poster.builder()
+            .id(1L)
+            .title("Title")
+            .description("Desc")
+            .fullDescription("Full Desc")
+            .price("$100")
+            .type("Sale")
+            .category("Tech")
+            .image("img.jpg")
+            .images(List.of("1.jpg", "2.jpg"))
+            .likes(5)
+            .saved(true)
+            .location("NY")
+            .phone("123")
+            .email("a@test.com")
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
+
+    Poster poster2 = Poster.builder()
+            .id(1L)
+            .title("Title")
+            .description("Desc")
+            .fullDescription("Full Desc")
+            .price("$100")
+            .type("Sale")
+            .category("Tech")
+            .image("img.jpg")
+            .images(List.of("1.jpg", "2.jpg"))
+            .likes(5)
+            .saved(true)
+            .location("NY")
+            .phone("123")
+            .email("a@test.com")
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
+
+    // getters
+    assertEquals(1L, poster1.getId());
+    assertEquals("Title", poster1.getTitle());
+    assertEquals("Desc", poster1.getDescription());
+
+    // setters
+    poster1.setTitle("New Title");
+    assertEquals("New Title", poster1.getTitle());
+
+    // equals & hashCode (covers canEqual internally)
+    assertEquals(poster2, poster2);
+    assertEquals(poster2, poster2);
+    assertEquals(poster2.hashCode(), poster2.hashCode());
+
+    assertEquals(poster2, Poster.builder()
+            .id(1L)
+            .title("Title")
+            .description("Desc")
+            .fullDescription("Full Desc")
+            .price("$100")
+            .type("Sale")
+            .category("Tech")
+            .image("img.jpg")
+            .images(List.of("1.jpg", "2.jpg"))
+            .likes(5)
+            .saved(true)
+            .location("NY")
+            .phone("123")
+            .email("a@test.com")
+            .createdAt(now)
+            .updatedAt(now)
+            .build());
+
+    assertNotEquals(poster1, null);
+    assertNotEquals(poster1, new Object());
+
+    Poster different = Poster.builder().id(2L).build();
+    assertNotEquals(poster1, different);
+
+    // toString
+    assertNotNull(poster1.toString());
+
+    // no-args constructor
+    assertNotNull(new Poster());
+}
+@Test
+void testEqualsAndHashCode() {
+    PosterDTO dto1 = new PosterDTO();
+    PosterDTO dto2 = new PosterDTO();
+    dto1.setId(1L);
+    dto2.setId(1L);
+
+    assertEquals(dto1, dto2);
+    assertEquals(dto1.hashCode(), dto2.hashCode());
+    assertNotEquals(dto1, null);
+    assertNotEquals(dto1, "string");
+}
+  @Test
+    void testUpdatePosterRequest_AllMethods() {
+        MultipartFile image = new MockMultipartFile(
+                "image", "image.jpg", "image/jpeg", "img".getBytes()
+        );
+
+        MultipartFile extra1 = new MockMultipartFile("i1", "1.jpg", "image/jpeg", "1".getBytes());
+        MultipartFile extra2 = new MockMultipartFile("i2", "2.jpg", "image/jpeg", "2".getBytes());
+        List<MultipartFile> images = List.of(extra1, extra2);
+
+        UpdatePosterRequest req1 = UpdatePosterRequest.builder()
+                .title("Title")
+                .description("Description")
+                .fullDescription("Full Description")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        UpdatePosterRequest req2 = UpdatePosterRequest.builder()
+                .title("Title")
+                .description("Description")
+                .fullDescription("Full Description")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        // equals & hashCode
+        assertEquals(req1, req2);
+        assertEquals(req1.hashCode(), req2.hashCode());
+        assertNotEquals(req1, null);
+        assertNotEquals(req1, new Object());
+
+        // getters
+        assertEquals("Title", req1.getTitle());
+        assertEquals(images, req1.getImages());
+
+        // setters
+        req1.setTitle("New");
+        assertEquals("New", req1.getTitle());
+
+        // toString
+        assertNotNull(req1.toString());
+
+        // no-args constructor
+        assertNotNull(new UpdatePosterRequest());
+    }
+    @Test
+    void testCreatePosterRequest_AllMethods() {
+        MultipartFile image = new MockMultipartFile(
+                "image", "image.jpg", "image/jpeg", "img".getBytes()
+        );
+
+        MultipartFile extra = new MockMultipartFile("i1", "1.jpg", "image/jpeg", "1".getBytes());
+        List<MultipartFile> images = List.of(extra);
+
+        CreatePosterRequest req1 = CreatePosterRequest.builder()
+                .title("Valid Title")
+                .description("Valid description text")
+                .fullDescription("This is a valid full description with enough length")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        CreatePosterRequest req2 = CreatePosterRequest.builder()
+                .title("Valid Title")
+                .description("Valid description text")
+                .fullDescription("This is a valid full description with enough length")
+                .price("100")
+                .type("Sale")
+                .category("Tech")
+                .image(image)
+                .images(images)
+                .location("NY")
+                .phone("123")
+                .email("a@test.com")
+                .build();
+
+        // equals & hashCode
+        assertEquals(req1, req2);
+        assertEquals(req1.hashCode(), req2.hashCode());
+        assertNotEquals(req1, null);
+        assertNotEquals(req1, new Object());
+
+        // getters
+        assertEquals("Valid Title", req1.getTitle());
+        assertEquals(images, req1.getImages());
+
+        // setters
+        req1.setTitle("New Title");
+        assertEquals("New Title", req1.getTitle());
+
+        // toString
+        assertNotNull(req1.toString());
+
+        // no-args constructor
+        assertNotNull(new CreatePosterRequest());
+    }
+    @Test
+    void testUserDTO_AllMethods() {
+        LocalDateTime now = LocalDateTime.now();
+
+        UserDTO user1 = new UserDTO(
+                1L,
+                "john",
+                "john@test.com",
+                "John Doe",
+                Set.of("USER", "ADMIN"),
+                now,
+                now,
+                true
+        );
+
+        UserDTO user2 = new UserDTO(
+                1L,
+                "john",
+                "john@test.com",
+                "John Doe",
+                Set.of("USER", "ADMIN"),
+                now,
+                now,
+                true
+        );
+
+        // equals & hashCode (covers canEqual)
+        assertEquals(user1, user2);
+        assertEquals(user1.hashCode(), user2.hashCode());
+        assertNotEquals(user1, null);
+        assertNotEquals(user1, new Object());
+
+        UserDTO different = new UserDTO();
+        different.setId(2L);
+        assertNotEquals(user1, different);
+
+        // getters
+        assertEquals(1L, user1.getId());
+        assertEquals("john", user1.getUsername());
+        assertEquals("john@test.com", user1.getEmail());
+        assertEquals("John Doe", user1.getName());
+        assertEquals(Set.of("USER", "ADMIN"), user1.getRoles());
+        assertEquals(now, user1.getCreatedAt());
+        assertEquals(now, user1.getLastLogin());
+        assertTrue(user1.isApproved());
+
+        // setters
+        user1.setUsername("newuser");
+        user1.setApproved(false);
+        assertEquals("newuser", user1.getUsername());
+        assertFalse(user1.isApproved());
+
+        // toString
+        String toString = user1.toString();
+        assertNotNull(toString);
+        assertTrue(toString.contains("UserDTO"));
+        assertTrue(toString.contains("newuser"));
+
+        // no-args constructor
+        UserDTO empty = new UserDTO();
+        assertNotNull(empty);
     }
 }

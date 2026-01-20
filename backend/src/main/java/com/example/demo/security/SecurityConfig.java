@@ -2,6 +2,7 @@ package com.example.demo.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -32,12 +34,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() 
-                .requestMatchers("/posters/**").permitAll()
-                .requestMatchers("/posters").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
-                .anyRequest().authenticated()
-            )
+    .requestMatchers(HttpMethod.GET, "/posters/**").permitAll()
+    .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+    .requestMatchers("/api/auth/users", "/api/auth/users/**").authenticated()
+    .requestMatchers("/images/**").permitAll()
+    .requestMatchers(HttpMethod.POST, "/posters/**").authenticated()
+    .requestMatchers(HttpMethod.PUT, "/posters/**").authenticated()
+    .requestMatchers(HttpMethod.DELETE, "/posters/**").authenticated()
+    .requestMatchers(HttpMethod.POST, "/comments/**").authenticated() // <-- add this
+    .anyRequest().authenticated()
+)
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );

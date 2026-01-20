@@ -44,7 +44,7 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-cy="user-menu-trigger">
           <Avatar className="h-8 w-8">
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
@@ -78,7 +78,7 @@ export function UserMenu() {
 
         {user.role === "admin" && (
           <DropdownMenuItem asChild>
-            <Link href="/admin" className="cursor-pointer">
+            <Link href="/admin" className="cursor-pointer" data-cy="admin-dashboard-link">
               <Shield className="mr-2 h-4 w-4" />
               <span>Admin Dashboard</span>
             </Link>

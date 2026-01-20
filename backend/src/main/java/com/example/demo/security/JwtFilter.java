@@ -25,16 +25,24 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
         String path = request.getRequestURI();
-System.out.println("JwtFilter: path=" + path + ", Authorization=" + request.getHeader("Authorization"));
+        String method = request.getMethod();
 
-        // Skip JWT check for public endpoints
-        if (path.startsWith("/api/auth/") || path.startsWith("/posters")) {
+        System.out.println(
+                "JwtFilter: path=" + path +
+                ", method=" + method +
+                ", Authorization=" + request.getHeader("Authorization")
+        );
+
+        // ✅ Public endpoints
+        if ((path.equals("/api/auth/login") || path.equals("/api/auth/register"))
+                || (path.startsWith("/posters") && method.equals("GET"))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,29 +50,33 @@ System.out.println("JwtFilter: path=" + path + ", Authorization=" + request.getH
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // Remove "Bearer "
+            String token = authHeader.substring(7);
 
             try {
-                // Validate token
                 String email = jwtUtil.extractEmail(token);
+
                 if (jwtUtil.validateToken(token, email)) {
-                    Long userId = jwtUtil.extractUserId(token);
                     Set<String> roles = jwtUtil.extractRoles(token);
 
                     var authorities = roles.stream()
-                            .map(SimpleGrantedAuthority::new)
+                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                             .collect(Collectors.toSet());
 
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(email, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    authorities
+                            );
+
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authentication);
                 }
             } catch (JwtException e) {
                 SecurityContextHolder.clearContext();
             }
         }
 
-        // Continue filter chain
         filterChain.doFilter(request, response);
     }
 }

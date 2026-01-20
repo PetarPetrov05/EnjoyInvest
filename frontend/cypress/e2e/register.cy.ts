@@ -12,7 +12,7 @@ describe("Login/Register Page", () => {
   })
 
   it("switches to register form when clicking Register tab", () => {
-    cy.contains("button", "Register").click()
+    cy.get('[data-cy="register-tab"]').click()
 
     cy.contains("button", "Register").should("have.class", "bg-background")
     cy.contains("button", "Sign In").should("not.have.class", "bg-background")
@@ -31,15 +31,15 @@ describe("Login/Register Page", () => {
     }
   }).as("registerRequest")
 
-  cy.contains("button", "Register").click()
+  cy.get('[data-cy="register-tab"]').click()
 
-  cy.get('input[name="username"]').type("newuser@test.com")
-  cy.get('input[name="name"]').type("newuser@test.com")
-  cy.get('input[name="email"]').type("newuser@test.com")
-  cy.get('input[name="password"]').type("123456")
-  cy.get('input[name="confirmPassword"]').type("123456")
+  cy.get('[data-cy="username-input"]').type("newuser@test.com")
+  cy.get('[data-cy="name-input"]').type("newuser@test.com")
+  cy.get('[data-cy="register-email-input"]').type("newuser@test.com")
+  cy.get('[data-cy="register-password-input"]').type("123456")
+  cy.get('[data-cy="confirm-password-input"]').type("123456")
 
-  cy.contains("button", "Register").click()
+  cy.get('[data-cy="register-button"]').click()
 
   cy.wait("@registerRequest").its("request.body").should((body) => {
     expect(body.email).to.equal("newuser@test.com")

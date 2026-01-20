@@ -58,6 +58,7 @@ export default function LoginPage() {
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
+                data-cy="login-tab"
               >
                 Sign In
               </button>
@@ -68,6 +69,7 @@ export default function LoginPage() {
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
+                data-cy="register-tab"
               >
                 Register
               </button>

@@ -13,11 +13,12 @@ import { ArrowLeft, Plus, X, Upload } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-
+import { useAuth } from "@/lib/contexts/auth-context";
+import { createPoster } from "@/lib/data/offers";
 export default function NewOfferPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const { getAuthHeader } = useAuth();
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -29,8 +30,8 @@ export default function NewOfferPage() {
     location: "",
     contactPhone: "",
     contactEmail: "",
-    mainImage: "",
-    additionalImages: [] as string[],
+    mainImage: null as File | null,
+    additionalImages: [] as (File | null)[],
   })
 
   // Specifications state
@@ -46,13 +47,13 @@ export default function NewOfferPage() {
   const addAdditionalImage = () => {
     setFormData((prev) => ({
       ...prev,
-      additionalImages: [...prev.additionalImages, ""],
+      additionalImages: [...prev.additionalImages, null],
     }))
   }
 
-  const updateAdditionalImage = (index: number, value: string) => {
+  const updateAdditionalImage = (index: number, file: File | null) => {
     const newImages = [...formData.additionalImages]
-    newImages[index] = value
+    newImages[index] = file
     setFormData((prev) => ({ ...prev, additionalImages: newImages }))
   }
 
@@ -67,37 +68,29 @@ export default function NewOfferPage() {
   e.preventDefault();
   setIsSubmitting(true);
 
-  
-  const newOffer = {
-    title: formData.title,
-    description: formData.description,
-    fullDescription: formData.fullDescription,
-    price: formData.price,
-    type: formData.type,
-    category: formData.category,
-    image: formData.mainImage,
-    images: formData.additionalImages,
-    location: formData.location,
-    phone: formData.contactPhone,
-    email: formData.contactEmail,
-    likes: 0,
-    saved: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  const formDataObj = new FormData();
+  formDataObj.append('title', formData.title);
+  formDataObj.append('description', formData.description);
+  formDataObj.append('fullDescription', formData.fullDescription);
+  formDataObj.append('price', formData.price);
+  formDataObj.append('type', formData.type);
+  formDataObj.append('category', formData.category);
+  formDataObj.append('location', formData.location);
+  formDataObj.append('phone', formData.contactPhone);
+  formDataObj.append('email', formData.contactEmail);
+  if (formData.mainImage) {
+    formDataObj.append('image', formData.mainImage);
+  }
+  formData.additionalImages.forEach((file) => {
+    if (file) {
+      formDataObj.append('images', file);
+    }
+  });
 
   try {
-    const res = await fetch("http://localhost:8080/posters", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newOffer),
-    });
-
-    if (!res.ok) throw new Error((await res.text()).toString());
-
-    const data = await res.json();
-    console.log("✅ Offer created:", data);
-    router.push("/admin/offers");
+    const data = await createPoster(formDataObj);
+    console.log("Offer created:", data);
+    router.push("/admin/offers"); // redirect after success
   } catch (error) {
     console.error("Error creating offer:", error);
   } finally {
@@ -135,6 +128,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="title">Offer Title *</Label>
                   <Input
                     id="title"
+                    data-cy="title-input"
                     placeholder="e.g., Premium Investment Portfolio"
                     value={formData.title}
                     onChange={(e) => handleInputChange("title", e.target.value)}
@@ -145,7 +139,7 @@ export default function NewOfferPage() {
                 <div className="space-y-2">
                   <Label htmlFor="type">Offer Type *</Label>
                   <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="type" data-cy="type-select">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -160,6 +154,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="category">Category *</Label>
                   <Input
                     id="category"
+                    data-cy="category-input"
                     placeholder="e.g., Real Estate, Stocks, Bonds"
                     value={formData.category}
                     onChange={(e) => handleInputChange("category", e.target.value)}
@@ -171,6 +166,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="price">Price *</Label>
                   <Input
                     id="price"
+                    data-cy="price-input"
                     placeholder="e.g., $50,000 or $150/month"
                     value={formData.price}
                     onChange={(e) => handleInputChange("price", e.target.value)}
@@ -182,6 +178,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="location">Location *</Label>
                   <Input
                     id="location"
+                    data-cy="location-input"
                     placeholder="e.g., Downtown Office, Online"
                     value={formData.location}
                     onChange={(e) => handleInputChange("location", e.target.value)}
@@ -193,6 +190,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="description">Short Description *</Label>
                   <Textarea
                     id="description"
+                    data-cy="description-textarea"
                     placeholder="Brief description (1-2 sentences)"
                     value={formData.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
@@ -205,6 +203,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="fullDescription">Full Description *</Label>
                   <Textarea
                     id="fullDescription"
+                    data-cy="full-description-textarea"
                     placeholder="Detailed description of the offer"
                     value={formData.fullDescription}
                     onChange={(e) => handleInputChange("fullDescription", e.target.value)}
@@ -224,23 +223,21 @@ export default function NewOfferPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="mainImage">Main Image URL *</Label>
+                <Label htmlFor="mainImage">Main Image *</Label>
                 <div className="flex gap-2">
                   <Input
                     id="mainImage"
-                    placeholder="https://example.com/image.jpg or /placeholder.svg?height=400&width=600"
-                    value={formData.mainImage}
-                    onChange={(e) => handleInputChange("mainImage", e.target.value)}
+                    data-cy="main-image-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFormData(prev => ({...prev, mainImage: e.target.files ? e.target.files[0] : null}))}
                     required
                   />
-                  <Button type="button" variant="outline" size="icon">
-                    <Upload className="h-4 w-4" />
-                  </Button>
                 </div>
                 {formData.mainImage && (
                   <div className="mt-2">
                     <img
-                      src={formData.mainImage || "/placeholder.svg"}
+                      src={URL.createObjectURL(formData.mainImage)}
                       alt="Main preview"
                       className="w-full max-w-md h-48 object-cover rounded-lg border"
                     />
@@ -251,21 +248,31 @@ export default function NewOfferPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Additional Images</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={addAdditionalImage}>
+                  <Button type="button" variant="outline" size="sm" onClick={addAdditionalImage} data-cy="add-image-button">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Image
                   </Button>
                 </div>
                 {formData.additionalImages.map((image, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder="https://example.com/image.jpg"
-                      value={image}
-                      onChange={(e) => updateAdditionalImage(index, e.target.value)}
-                    />
-                    <Button type="button" variant="outline" size="icon" onClick={() => removeAdditionalImage(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
+                  <div key={index} className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        data-cy="additional-image-input"
+                        onChange={(e) => updateAdditionalImage(index, e.target.files ? e.target.files[0] : null)}
+                      />
+                      <Button type="button" variant="outline" size="icon" onClick={() => removeAdditionalImage(index)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {image && (
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`Additional ${index + 1}`}
+                        className="w-full max-w-md h-32 object-cover rounded-lg border"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -319,6 +326,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="contactPhone">Contact Phone *</Label>
                   <Input
                     id="contactPhone"
+                    data-cy="contact-phone-input"
                     type="tel"
                     placeholder="+1 (555) 123-4567"
                     value={formData.contactPhone}
@@ -330,6 +338,7 @@ export default function NewOfferPage() {
                   <Label htmlFor="contactEmail">Contact Email *</Label>
                   <Input
                     id="contactEmail"
+                    data-cy="contact-email-input"
                     type="email"
                     placeholder="contact@enjoyinvest.com"
                     value={formData.contactEmail}
@@ -343,10 +352,10 @@ export default function NewOfferPage() {
 
           {/* Actions */}
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" asChild>
+            <Button type="button" variant="outline" asChild data-cy="cancel-button">
               <Link href="/admin/offers">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} data-cy="create-offer-button">
               {isSubmitting ? "Creating..." : "Create Offer"}
             </Button>
           </div>

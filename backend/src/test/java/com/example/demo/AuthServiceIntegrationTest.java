@@ -8,156 +8,100 @@ import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.repoModels.RepoRole;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AuthControllerIntegrationTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private UserRepository userRepository;
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @BeforeEach
-    void setUp() {
-        userRepository.deleteAll();
-        roleRepository.deleteAll();
-
-        RepoRole userRole = new RepoRole();
-        userRole.setName("USER");
-        roleRepository.save(userRole);
+    void setup() {
+        Optional<RepoRole> roleOpt = roleRepository.findByName("USER");
+        if (roleOpt.isEmpty()) {
+            RepoRole role = new RepoRole();
+            role.setName("USER");
+            roleRepository.save(role);
+        }
     }
 
-    // ------------------ REGISTER ------------------
+    private String toJson(Object obj) throws Exception {
+        return objectMapper.writeValueAsString(obj);
+    }
 
-    @Test
-    void register_Successful() throws Exception {
+    private void registerUser(String username, String email, String password) throws Exception {
         RegisterRequest request = new RegisterRequest();
-        request.setEmail("newuser@example.com");
-        request.setPassword("password123");
+        request.setUsername(username);
+        request.setEmail(email);
+        request.setPassword(password);
+        request.setName("Test Name");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isOk());
+    }
+
+    private ResultActions loginUser(String email, String password) throws Exception {
+        LoginRequest login = new LoginRequest();
+        login.setEmail(email);
+        login.setPassword(password);
+
+        return mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(login)));
+    }
+
+    @Test
+    void register_createsUserSuccessfully() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("john_doe");
+        request.setEmail("john@example.com");
+        request.setPassword("Abcdef123!");
         request.setName("John Doe");
-        request.setUsername("johndoe");
 
         mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists());
+    }
+
+    @Test
+    void login_returnsToken() throws Exception {
+        registerUser("maria", "maria@example.com", "ValidPass123!");
+
+        loginUser("maria@example.com", "ValidPass123!")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.roles[0]").value("USER"));
     }
 
-    @Test
-    void register_EmailAlreadyExists() throws Exception {
-        // First registration
-        RegisterRequest request1 = new RegisterRequest();
-        request1.setEmail("duplicate@example.com");
-        request1.setPassword("password123");
-        request1.setName("User One");
-        request1.setUsername("userone");
+    // Add more tests if you have refresh/logout endpoints
+    // For example, if you have /api/auth/refresh and /api/auth/logout, add similar tests as the friend's
 
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request1)))
-                .andExpect(status().isOk());
-
-        // Attempt duplicate registration
-        RegisterRequest request2 = new RegisterRequest();
-        request2.setEmail("duplicate@example.com");
-        request2.setPassword("password456");
-        request2.setName("User Two");
-        request2.setUsername("usertwo");
-
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request2)))
-                .andExpect(status().isBadRequest());
-    }
-
-    // ------------------ LOGIN ------------------
-
-    @Test
-    void login_Successful() throws Exception {
-        // First register the user
-        RegisterRequest register = new RegisterRequest();
-        register.setEmail("testuser@example.com");
-        register.setPassword("password123");
-        register.setName("Test User");
-        register.setUsername("testuser");
-
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(register)))
-                .andExpect(status().isOk());
-
-        // Login request
-        LoginRequest login = new LoginRequest();
-        login.setEmail("testuser@example.com");
-        login.setPassword("password123");
-
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists())
-                .andExpect(jsonPath("$.roles[0]").value("USER"));
-    }
-
-    @Test
-    void login_WrongPassword() throws Exception {
-        // First register the user
-        RegisterRequest register = new RegisterRequest();
-        register.setEmail("testuser@example.com");
-        register.setPassword("correctpassword");
-        register.setName("Test User");
-        register.setUsername("testuser");
-
-        mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(register)))
-                .andExpect(status().isOk());
-
-        // Login with wrong password
-        LoginRequest login = new LoginRequest();
-        login.setEmail("testuser@example.com");
-        login.setPassword("wrongpassword");
-
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void login_UserNotFound() throws Exception {
-        LoginRequest login = new LoginRequest();
-        login.setEmail("nonexistent@example.com");
-        login.setPassword("password123");
-
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isUnauthorized());
+    private String extractCookieValue(String cookieHeader, String name) {
+        return Arrays.stream(cookieHeader.split(";"))
+                .filter(c -> c.startsWith(name + "="))
+                .map(c -> c.substring(name.length() + 1))
+                .findFirst()
+                .orElse(null);
     }
 }

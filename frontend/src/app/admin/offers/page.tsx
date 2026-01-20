@@ -21,7 +21,9 @@ import { useState } from "react"
 
 import { useEffect } from "react";
 
+import { useAuth } from "@/lib/contexts/auth-context";
 import { getOffers,deletePoster } from "@/lib/data/offers";
+import { BACKEND_URL } from "@/lib/data/offers";
 import type { Offer } from "@/lib/data/offers"
 
 export default function AdminOffersPage() {
@@ -29,7 +31,7 @@ export default function AdminOffersPage() {
   const [filterType, setFilterType] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
 const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
-  
+  const { getAuthHeader } = useAuth();
     useEffect(() => {
       async function loadOffers() {
         const offers = await getOffers();
@@ -57,16 +59,12 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
   const handleDelete = async (id: number) => {
   if (confirm("Are you sure you want to delete this offer?")) {
     try {
-      await deletePoster(id);
-
-      // Remove deleted offer from UI without refresh
-      setFeaturedOffers((prev) => prev.filter((offer) => offer.id !== id));
-
-      console.log("Offer deleted:", id);
-    } catch (error) {
-      console.error("Failed to delete offer:", error);
-      alert("Could not delete offer. Please try again.");
-    }
+    await deletePoster(id); // ✅ pass the token function
+    console.log("Poster deleted successfully");
+    // optionally, refresh UI or navigate
+  } catch (error) {
+    console.error("Failed to delete poster:", error);
+  }
   }
 };
 
@@ -84,7 +82,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
             <h1 className="text-3xl font-bold">Offers Management</h1>
             <p className="text-muted-foreground">Manage all truck rentals, sales, and trip offers.</p>
           </div>
-          <Button asChild>
+          <Button asChild data-cy="add-new-offer-button">
             <Link href="/admin/offers/new">
               <Plus className="mr-2 h-4 w-4" />
               Add New Offer
@@ -164,7 +162,7 @@ const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <img
-                            src={offer.image || "/placeholder.svg"}
+                            src={offer.image ? `${BACKEND_URL}/images/${offer.image}` : "/placeholder.svg"}
                             alt={offer.title}
                             className="w-10 h-10 rounded object-cover"
                           />

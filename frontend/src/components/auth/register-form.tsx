@@ -67,6 +67,7 @@ export function RegisterForm() {
             <Input
               id="username"
               name="username"
+              data-cy="username-input"
               value={formData.username}
               onChange={handleChange}
               placeholder="Your username"
@@ -81,6 +82,7 @@ export function RegisterForm() {
             <Input
               id="name"
               name="name"
+              data-cy="name-input"
               value={formData.name}
               onChange={handleChange}
               placeholder="Your full name"
@@ -96,6 +98,7 @@ export function RegisterForm() {
               id="email"
               name="email"
               type="email"
+              data-cy="register-email-input"
               value={formData.email}
               onChange={handleChange}
               placeholder="your.email@example.com"
@@ -111,6 +114,7 @@ export function RegisterForm() {
               id="password"
               name="password"
               type="password"
+              data-cy="register-password-input"
               value={formData.password}
               onChange={handleChange}
               placeholder="Create a password"
@@ -126,6 +130,7 @@ export function RegisterForm() {
               id="confirmPassword"
               name="confirmPassword"
               type="password"
+              data-cy="confirm-password-input"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm your password"
@@ -135,7 +140,7 @@ export function RegisterForm() {
           </div>
 
           {/* Submit */}
-          <Button type="submit" className="w-full" disabled={authIsLoading}>
+          <Button type="submit" className="w-full" disabled={authIsLoading} data-cy="register-button">
             {authIsLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

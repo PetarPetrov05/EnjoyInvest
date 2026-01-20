@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { LayoutDashboard, Truck, MessageSquare, Users, Settings, BarChart3, FileText, Shield, Home } from "lucide-react"
+import { LayoutDashboard, Truck, MessageSquare, Users, Settings, Shield, Home } from "lucide-react"
 
 const sidebarItems = [
   {
@@ -32,16 +32,6 @@ const sidebarItems = [
     badge: "2",
   },
   {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Reports",
-    href: "/admin/reports",
-    icon: FileText,
-  },
-  {
     title: "Settings",
     href: "/admin/settings",
     icon: Settings,
@@ -66,7 +56,7 @@ export function AdminSidebar() {
         {sidebarItems.map((item) => {
           const isActive = pathname === item.href
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} data-cy={`sidebar-${item.title.toLowerCase().replace(' ', '-')}-link`}>
               <Button
                 variant={isActive ? "default" : "ghost"}
                 className={cn(

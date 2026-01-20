@@ -1,24 +1,28 @@
 describe('Login Page', () => {
   it('should login successfully and redirect to home', () => {
-    cy.visit('http://localhost:3000/login')
+    cy.visit('/login')
 
-    cy.get('#email').type('petar.aleksandrov104@gmail.com')
-    cy.get('#password').type('123')
+    cy.get('[data-cy="email-input"]').type('petar.aleksandrov104@gmail.com')
+    cy.get('[data-cy="password-input"]').type('123')
 
-    cy.contains('Sign In').click()
+    cy.get('[data-cy="login-button"]').click()
 
    
     cy.url().should('eq', 'http://localhost:3000/')
   })
 
   it('should show error message if credentials are invalid', () => {
-    cy.visit('http://localhost:3000/login')
+    cy.visit('/login')
 
-    cy.get('#email').type('wrong@email.com')
-    cy.get('#password').type('wrongpassword')
+    cy.get('[data-cy="email-input"]').type('definitely@wrong.com')
+    cy.get('[data-cy="password-input"]').type('definitelywrongpassword')
 
-    cy.contains('button', 'Sign In').click()
+    cy.get('[data-cy="login-button"]').click()
 
-    cy.contains('Invalid email or password').should('exist')
+    // After failed login, we should still be on the login page
+    cy.url().should('include', '/login')
+    
+    // And the error message should appear
+    cy.get('[data-cy="error-message"]', { timeout: 5000 }).should('be.visible')
   })
 })
