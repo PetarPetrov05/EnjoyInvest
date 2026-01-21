@@ -151,7 +151,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div id="offers" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div id="offers" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-cy="featured-offers-grid">
             {featuredOffers.map((offer) => (
               <OfferCard key={offer.id} offer={offer} />
             ))}

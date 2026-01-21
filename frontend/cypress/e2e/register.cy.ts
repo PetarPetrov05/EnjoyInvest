@@ -1,6 +1,7 @@
 describe("Login/Register Page", () => {
 
   beforeEach(() => {
+    cy.clearLocalStorage()
     cy.visit("http://localhost:3000/login") // Adjust port if needed
   })
 

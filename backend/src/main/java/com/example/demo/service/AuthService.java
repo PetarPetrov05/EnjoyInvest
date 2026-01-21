@@ -78,8 +78,14 @@ public class AuthService {
 
         var encodedPassword = passwordEncoder.encode(password);
 
-        RepoRole defaultRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new IllegalStateException("Default role USER not found"));
+        RepoRole defaultRole;
+        if (userRepository.count() == 0) {
+            defaultRole = roleRepository.findByName("ADMIN")
+                    .orElseThrow(() -> new IllegalStateException("Default role ADMIN not found"));
+        } else {
+            defaultRole = roleRepository.findByName("USER")
+                    .orElseThrow(() -> new IllegalStateException("Default role USER not found"));
+        }
 
         RepoUser newUser = new RepoUser();
         newUser.setEmail(email);
