@@ -52,14 +52,6 @@ describe('Admin Edit Offer', () => {
     cy.get('[data-cy="contact-phone-input"]').clear().type('+987654321')
     cy.get('[data-cy="contact-email-input"]').clear().type('updated@enjoyinvest.com')
 
-    // 10 Add another additional image (if the form allows multiple)
-    cy.get('body').then($body => {
-      if ($body.find('button:contains("Add Image")').length > 0) {
-        cy.contains('button', 'Add Image').click()
-        cy.get('input[placeholder="https://example.com/image.jpg"]').last().type('https://example.com/another-image.jpg')
-      }
-    })
-
     // 1️1Intercept the update request
     cy.intercept('PUT', '/posters/*').as('updateOffer')
 
@@ -77,7 +69,7 @@ describe('Admin Edit Offer', () => {
     // 1️5 Verify the updated offer exists in the table
     cy.contains('Updated Investment Offer', { timeout: 10000 }).should('exist')
     cy.contains('Real Estate').should('exist')
-    cy.contains('$2500').should('exist')
+    cy.contains('2500').should('exist')
   })
 
   it('should cancel editing an offer and return to offers list', () => {

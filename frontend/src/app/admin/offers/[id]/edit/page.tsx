@@ -204,27 +204,27 @@ export default function EditOfferPage({ params }: EditOfferPageProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Category *</Label>
-                  <Input id="category" value={formData.category} onChange={(e) => handleInputChange("category", e.target.value)} required />
+                  <Input id="category" value={formData.category} onChange={(e) => handleInputChange("category", e.target.value)} required data-cy="category-input" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="price">Price *</Label>
-                  <Input id="price" value={formData.price} onChange={(e) => handleInputChange("price", e.target.value)} required />
+                  <Input id="price" value={formData.price} onChange={(e) => handleInputChange("price", e.target.value)} required data-cy="price-input" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="location">Location *</Label>
-                  <Input id="location" value={formData.location} onChange={(e) => handleInputChange("location", e.target.value)} required />
+                  <Input id="location" value={formData.location} onChange={(e) => handleInputChange("location", e.target.value)} required data-cy="location-input" />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="description">Short Description *</Label>
-                  <Textarea id="description" value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} rows={2} required />
+                  <Textarea id="description" value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} rows={2} required data-cy="description-textarea" />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="fullDescription">Full Description *</Label>
-                  <Textarea id="fullDescription" value={formData.fullDescription} onChange={(e) => handleInputChange("fullDescription", e.target.value)} rows={6} required />
+                  <Textarea id="fullDescription" value={formData.fullDescription} onChange={(e) => handleInputChange("fullDescription", e.target.value)} rows={6} required data-cy="full-description-textarea" />
                 </div>
               </div>
             </CardContent>
@@ -316,11 +316,11 @@ export default function EditOfferPage({ params }: EditOfferPageProps) {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Phone *</Label>
-                <Input value={formData.contactPhone} onChange={(e) => handleInputChange("contactPhone", e.target.value)} required />
+                <Input value={formData.contactPhone} onChange={(e) => handleInputChange("contactPhone", e.target.value)} required data-cy="contact-phone-input" />
               </div>
               <div className="space-y-2">
                 <Label>Email *</Label>
-                <Input value={formData.contactEmail} onChange={(e) => handleInputChange("contactEmail", e.target.value)} required />
+                <Input value={formData.contactEmail} onChange={(e) => handleInputChange("contactEmail", e.target.value)} required data-cy="contact-email-input" />
               </div>
             </CardContent>
           </Card>

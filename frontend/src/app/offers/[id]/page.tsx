@@ -159,7 +159,7 @@ export default function OfferDetailPage() {
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="space-y-2">
-                    <CardTitle className="text-2xl">{offer.title}</CardTitle>
+                    <h1 className="text-2xl font-bold">{offer.title}</h1>
                     <div className="flex items-center space-x-4">
                       <Badge variant="outline">{offer.category}</Badge>
                       <div className="flex items-center space-x-1 text-sm text-muted-foreground">
@@ -214,7 +214,7 @@ export default function OfferDetailPage() {
             {offer.specifications && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Specifications</CardTitle>
+                  <h2 className="text-xl font-semibold">Specifications</h2>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,7 +232,7 @@ export default function OfferDetailPage() {
             {/* Comments Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Comments</CardTitle>
+                <h2 className="text-xl font-semibold">Comments</h2>
               </CardHeader>
               <CardContent className="space-y-6">
                 {comments.map(comment => (
