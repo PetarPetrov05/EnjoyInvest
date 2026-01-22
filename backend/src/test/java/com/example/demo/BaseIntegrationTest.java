@@ -35,6 +35,22 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public abstract class BaseIntegrationTest {
+    @Container
+    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:15.3"))
+            .withDatabaseName("test")
+            .withUsername("postgres")
+            .withPassword("postgres");
+
+    @DynamicPropertySource
+    static void overrideProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.flyway.enabled", () -> true);
+        registry.add("spring.flyway.locations", () -> "classpath:db/migrations");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
+    }
+
     @Autowired
     protected WebApplicationContext context;
     @Autowired
@@ -61,15 +77,7 @@ public abstract class BaseIntegrationTest {
                 .build();
     }
 
-    private static final DockerImageName POSTGIS_IMAGE =
-            DockerImageName.parse("postgres:15-alpine")
-                    .asCompatibleSubstituteFor("postgres");
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGIS_IMAGE)
-            .withDatabaseName("test_db")
-            .withUsername("test")
-            .withPassword("test");
+        // ...existing code...
 
     @Container
     static GenericContainer<?> redis =

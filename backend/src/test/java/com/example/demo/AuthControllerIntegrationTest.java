@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -71,6 +72,8 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void register_createsUserSuccessfully() throws Exception {
+            // Ensure no user with this email exists before test
+            userRepository.findByEmail("john@example.com").ifPresent(userRepository::delete);
         RegisterRequest request = new RegisterRequest();
         request.setUsername("john_doe");
         request.setEmail("john@example.com");
@@ -94,8 +97,24 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.roles[0]").value("USER"));
     }
 
-    // Add more tests if you have refresh/logout endpoints
-    // For example, if you have /api/auth/refresh and /api/auth/logout, add similar tests as the friend's
+    @Test
+    void register_createsUserSuccessfully_andVerifiesInDatabase() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("john_doe");
+        request.setEmail("john@example.com");
+        request.setPassword("Abcdef123!");
+        request.setName("John Doe");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists());
+
+        // Verify user in database
+        assertTrue(userRepository.findByEmail("john@example.com").isPresent());
+        assertEquals("john_doe", userRepository.findByEmail("john@example.com").get().getUsername());
+    }
 
     private String extractCookieValue(String cookieHeader, String name) {
         return Arrays.stream(cookieHeader.split(";"))

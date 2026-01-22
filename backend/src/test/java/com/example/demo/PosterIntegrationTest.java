@@ -28,9 +28,7 @@ public class PosterIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setup() {
-        // Clean up any existing posters from sample data
         posterRepository.deleteAll();
-        // Full valid PosterDTO to pass validation
         samplePoster = PosterDTO.builder()
                 .title("Sample Poster")
                 .description("This is a sample description")
@@ -194,5 +192,36 @@ public class PosterIntegrationTest extends BaseIntegrationTest {
     void testDeletePoster_NotFound() {
         boolean deleted = posterService.deletePoster(999L);
         assertFalse(deleted, "Delete should return false for non-existing poster");
+    }
+
+    @Test
+    void testCreatePoster_Success_andVerifyInDatabase() {
+        PosterDTO created = posterService.createPoster(samplePoster);
+        assertNotNull(created.getId(), "Created poster should have an ID");
+        assertEquals(samplePoster.getTitle(), created.getTitle());
+        // Verify in database
+        assertTrue(posterRepository.findById(created.getId()).isPresent(), "Poster should exist in DB");
+        assertEquals(samplePoster.getTitle(), posterRepository.findById(created.getId()).get().getTitle());
+    }
+
+    @Test
+    void testUpdatePoster_Success_andVerifyInDatabase() {
+        PosterDTO created = posterService.createPoster(samplePoster);
+        created.setImages(new ArrayList<>(created.getImages()));
+        created.setTitle("Updated Title");
+        PosterDTO updated = posterService.updatePoster(created.getId(), created);
+        assertNotNull(updated);
+        assertEquals("Updated Title", updated.getTitle());
+        // Verify in database
+        assertEquals("Updated Title", posterRepository.findById(created.getId()).get().getTitle());
+    }
+
+    @Test
+    void testDeletePoster_Success_andVerifyInDatabase() {
+        PosterDTO created = posterService.createPoster(samplePoster);
+        boolean deleted = posterService.deletePoster(created.getId());
+        assertTrue(deleted, "Delete should return true for existing poster");
+        // Verify in database
+        assertFalse(posterRepository.findById(created.getId()).isPresent(), "Poster should be deleted from DB");
     }
 }
