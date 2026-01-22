@@ -2,6 +2,7 @@ package com.example.demo;
 
 import com.example.demo.dto.PosterDTO;
 import com.example.demo.service.PosterService;
+import com.example.demo.repository.PosterRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +19,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class PosterIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
+    private PosterRepository posterRepository;
+
+    @Autowired
     private PosterService posterService;
 
     private PosterDTO samplePoster;
 
     @BeforeEach
     void setup() {
+        // Clean up any existing posters from sample data
+        posterRepository.deleteAll();
         // Full valid PosterDTO to pass validation
         samplePoster = PosterDTO.builder()
                 .title("Sample Poster")
