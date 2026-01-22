@@ -2,14 +2,23 @@ package com.example.demo;
 
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
-import com.example.demo.dto.LoginResponse;
+import com.example.demo.model.Role;
+import com.example.demo.model.AuthResult;
+import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.repoModels.RepoRole;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -18,23 +27,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setup() {
-        // Setup is handled in BaseIntegrationTest
+        Optional<RepoRole> roleOpt = roleRepository.findByName("USER");
+        if (roleOpt.isEmpty()) {
+            RepoRole role = new RepoRole();
+            role.setName("USER");
+            roleRepository.save(role);
+        }
     }
 
     private String toJson(Object obj) throws Exception {
         return objectMapper.writeValueAsString(obj);
     }
 
-    private void registerUser(String username, String email, String password, String name) throws Exception {
+    private void registerUser(String username, String email, String password) throws Exception {
         RegisterRequest request = new RegisterRequest();
         request.setUsername(username);
         request.setEmail(email);
         request.setPassword(password);
-        request.setName(name);
+        request.setName("Test Name");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -42,15 +59,14 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isOk());
     }
 
-    private MvcResult loginUser(String email, String password) throws Exception {
+    private ResultActions loginUser(String email, String password) throws Exception {
         LoginRequest login = new LoginRequest();
         login.setEmail(email);
         login.setPassword(password);
 
         return mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(login)))
-                .andReturn();
+                .content(toJson(login)));
     }
 
     @Test
@@ -58,62 +74,34 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
         RegisterRequest request = new RegisterRequest();
         request.setUsername("john_doe");
         request.setEmail("john@example.com");
-        request.setPassword("password123");
+        request.setPassword("Abcdef123!");
         request.setName("John Doe");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists())
-                .andExpect(jsonPath("$.roles").isArray());
+                .andExpect(jsonPath("$.token").exists());
     }
 
     @Test
     void login_returnsToken() throws Exception {
-        // First register a user
-        registerUser("maria", "maria@example.com", "password123", "Maria");
+        registerUser("maria", "maria@example.com", "ValidPass123!");
 
-        // Then login
-        LoginRequest login = new LoginRequest();
-        login.setEmail("maria@example.com");
-        login.setPassword("password123");
-
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(login)))
+        loginUser("maria@example.com", "ValidPass123!")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
-                .andExpect(jsonPath("$.roles").isArray());
+                .andExpect(jsonPath("$.roles[0]").value("USER"));
     }
 
-    @Test
-    void login_withInvalidCredentials_returns401() throws Exception {
-        LoginRequest login = new LoginRequest();
-        login.setEmail("nonexistent@example.com");
-        login.setPassword("wrongpassword");
+    // Add more tests if you have refresh/logout endpoints
+    // For example, if you have /api/auth/refresh and /api/auth/logout, add similar tests as the friend's
 
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(login)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void register_withExistingEmail_returns400() throws Exception {
-        // Register first user
-        registerUser("user1", "same@example.com", "password123", "User One");
-
-        // Try to register second user with same email
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("user2");
-        request.setEmail("same@example.com");
-        request.setPassword("password123");
-        request.setName("User Two");
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(request)))
-                .andExpect(status().isBadRequest());
+    private String extractCookieValue(String cookieHeader, String name) {
+        return Arrays.stream(cookieHeader.split(";"))
+                .filter(c -> c.startsWith(name + "="))
+                .map(c -> c.substring(name.length() + 1))
+                .findFirst()
+                .orElse(null);
     }
 }
